@@ -1,0 +1,281 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>YouTube Floating Player</title>
+  <style>
+    /* আপনার পূর্বের CSS স্টাইলগুলি এখানে রাখুন */
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #181818;
+      color: white;
+      text-align: center;
+      padding: 20px;
+      margin: 0;
+    }
+    #container {
+      max-width: 600px;
+      margin: auto;
+    }
+    input {
+      width: 67%;
+      padding: 10px;
+      margin: 10px 0;
+      border: none;
+      border-radius: 5px;
+    }
+button {
+  background: rgba(255, 0, 0, 0.5);
+  color: white;
+  border: none;
+  padding: 10px 18px;
+  cursor: pointer;
+  border-radius: 5px;
+  
+  /* বর্ডার এবং প্যাডিংকে প্রস্থের মধ্যে অন্তর্ভুক্ত করে */
+}
+
+    }
+    #errorMessage {
+      color: red;
+      margin-top: 10px;
+      display: none;
+    }
+    ul {
+      list-style: none;
+      padding: 0;
+    }
+    li {
+      padding: 10px;
+      background: #282828;
+      margin: 5px 0;
+      cursor: pointer;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    /* Floating player container */
+    #floatingPlayer {
+      position: fixed;
+      bottom: 20px;
+      right: 20px;
+      width: 320px;
+      height: 180px;
+      background: black;
+      border: 2px solid white;
+      display: none;
+      z-index: 1000;
+      border-radius: 8px;
+      resize: both;
+      overflow: auto;
+      cursor: move; /* Change cursor to indicate draggable */
+    }
+    #floatingPlayer iframe {
+      width: 100%;
+      height: 100%;
+      pointer-events: none;
+      border-radius: 8px;
+    }
+    /* Custom control bar styles */
+    #controlBar {
+      position: absolute;
+      top: 0;
+      left: 0;
+      right: 0;
+      background: rgba(0, 0, 0, 0.5);
+      padding: 5px 10px;
+      border-radius: 8px 8px 0 0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      opacity: 0;
+    }
+    .controlButton {
+      background: rgba(255, 255, 255, 0.5);
+      border: none;
+      padding: 5px 10px;
+      color: black;
+      cursor: pointer;
+      border-radius: 5px;
+      font-size: 16px;
+    }
+    .controlButton:hover {
+      background: rgba(255, 255, 255, 0.8);
+    }
+    .fullScreenButton {
+      background: rgba(0, 0, 0, 0.5);
+      color: white;
+      font-size: 20px;
+      padding: 8px 12px;
+      border-radius: 5px;
+      cursor: pointer;
+    }
+    .fullScreenButton:hover {
+      background: rgba(0, 0, 0, 0.8);
+    }
+    .deleteButton {
+      background: rgba(255, 0, 0, 0.5);
+      color: white;
+      border: none;
+      padding: 5px 10px;
+      cursor: pointer;
+      border-radius: 5px;
+    }
+    .deleteButton:hover {
+      background: rgba(255, 0, 0, 0.8);
+    }
+
+    /* ভিডিও লিস্ট কন্টেইনার স্ক্রলযোগ্য করুন */
+    #videoListContainer {
+      max-height: 250px; /* লিস্টের সর্বোচ্চ উচ্চতা */
+      overflow-y: auto; /* উল্লম্ব স্ক্রল যোগ করুন */
+      margin-top: 10px;
+      background: #282828;
+      border-radius: 8px;
+      padding: 10px;
+    }
+
+    #videoList {
+      padding: 0;
+      margin: 0;
+    }
+
+    /* ভিডিও লিস্ট আইটেম স্টাইল */
+    #videoList li {
+      padding: 10px;
+      background: #383838;
+      margin: 5px 0;
+      cursor: pointer;
+      border-radius: 5px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+  </style>
+</head>
+<body>
+  <h1>YouTube Player</h1>
+  <div id="container">
+    <div style="display: flex; justify-content: space-between; align-items: center;">
+      <input type="text" id="videoInput" placeholder="YouTube Link...." />
+      <button style="margin-left: 67%; box-sizing: border-box; position: absolute" onclick="addVideo()">Add</button>
+    </div>
+    <!-- ভিডিও লিস্ট কন্টেইনার -->
+    <div id="videoListContainer">
+      <ul id="videoList"></ul>
+    </div>
+  </div>
+
+  <!-- Floating player container -->
+  <div id="floatingPlayer">
+    <div id="player"></div> <!-- YouTube IFrame API এর জন্য প্লেয়ার কন্টেইনার -->
+    <div id="controlBar">
+      <button style="opacity: 0.01" class="controlButton" id="playPauseButton" onclick="togglePlayPause()">Play</button>
+      <button class="controlButton fullScreenButton" onclick="toggleFullScreen()">⛶</button>
+    </div>
+  </div>
+
+  <script>
+    let videos = JSON.parse(localStorage.getItem("videos")) || [];
+    let currentIndex = 0;
+    let player; // YouTube IFrame API প্লেয়ার অবজেক্ট
+
+    // YouTube IFrame API লোড করার পর এই ফাংশনটি কল হবে
+    function onYouTubeIframeAPIReady() {
+      player = new YT.Player('player', {
+        height: '100%',
+        width: '100%',
+        events: {
+          'onReady': onPlayerReady,
+          'onStateChange': onPlayerStateChange
+        }
+      });
+    }
+
+    // প্লেয়ার রেডি হলে এই ফাংশনটি কল হবে
+    function onPlayerReady(event) {
+      if (videos.length > 0) {
+        playVideo(currentIndex);
+      }
+    }
+
+    // প্লেয়ার স্টেট চেঞ্জ হলে এই ফাংশনটি কল হবে
+    function onPlayerStateChange(event) {
+      if (event.data == YT.PlayerState.ENDED) {
+        playNextVideo(); // ভিডিও শেষ হলে পরবর্তী ভিডিও চালু করুন
+      }
+    }
+
+    // পরবর্তী ভিডিও চালানোর ফাংশন
+    function playNextVideo() {
+      currentIndex = (currentIndex + 1) % videos.length;
+      playVideo(currentIndex);
+    }
+
+    // ভিডিও চালানোর ফাংশন
+    function playVideo(index) {
+      if (player && player.loadVideoById) {
+        player.loadVideoById(videos[index]);
+        document.getElementById("floatingPlayer").style.display = "block";
+      }
+    }
+
+    // ভিডিও যোগ করার ফাংশন
+    function addVideo() {
+      let input = document.getElementById("videoInput").value;
+      let videoId = getYouTubeID(input);
+      if (videoId && !videos.includes(videoId)) {
+        videos.push(videoId);
+        localStorage.setItem("videos", JSON.stringify(videos));
+        loadVideos();
+        document.getElementById("errorMessage").style.display = "none";
+      } else {
+        document.getElementById("errorMessage").style.display = "block";
+      }
+      document.getElementById("videoInput").value = "";
+    }
+
+    // ভিডিও লোড করার ফাংশন
+    function loadVideos() {
+      let list = document.getElementById("videoList");
+      list.innerHTML = "";
+      videos.forEach((video, index) => {
+        let li = document.createElement("li");
+        li.innerHTML = `▶ Video ${index + 1}`;
+        li.onclick = () => playVideo(index);
+        let deleteButton = document.createElement("button");
+        deleteButton.innerHTML = "Delete";
+        deleteButton.className = "deleteButton";
+        deleteButton.onclick = (e) => {
+          e.stopPropagation();
+          deleteVideo(index);
+        };
+        li.appendChild(deleteButton);
+        list.appendChild(li);
+      });
+    }
+
+    // ভিডিও ডিলিট করার ফাংশন
+    function deleteVideo(index) {
+      videos.splice(index, 1);
+      localStorage.setItem("videos", JSON.stringify(videos));
+      loadVideos();
+    }
+
+    // YouTube লিংক থেকে ভিডিও আইডি বের করার ফাংশন
+    function getYouTubeID(url) {
+      let match = url.match(
+        /(?:youtube\.com\/(?:[^\/]+\/.+|(?:v|e(?:mbed)?)\/|.*[?&]v=)|youtu\.be\/)([^"&?\/ ]{11})/
+      );
+      return match ? match[1] : null;
+    }
+
+    loadVideos();
+  </script>
+
+  <!-- YouTube IFrame API স্ক্রিপ্ট -->
+  <script src="https://www.youtube.com/iframe_api"></script>
+</body>
+</html>
