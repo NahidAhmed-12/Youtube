@@ -617,9 +617,11 @@
     }
 
     function deleteAllVideos() {
-      db.ref("videos").remove()
+      const videosRef = db.ref("videos");
+      
+      videosRef.remove()
         .then(() => {
-          console.log("All videos deleted successfully");
+          alert("All videos deleted successfully!");
           loadAllVideos();
         })
         .catch(error => {
@@ -636,14 +638,13 @@
     }
 
     function confirmDeleteAll() {
-      if (confirm("WARNING: This will delete ALL videos from the database.\n\nAre you sure you want to continue?")) {
-        if (confirm("THIS IS YOUR LAST WARNING!\nAll videos will be permanently deleted.\n\nType 'DELETE ALL' to confirm.")) {
-          const confirmation = prompt("Please type 'DELETE ALL' to confirm:");
-          if (confirmation === "DELETE ALL") {
-            deleteAllVideos();
-          } else {
-            alert("Deletion cancelled. The videos were NOT deleted.");
-          }
+      if (confirm("⚠️ WARNING: This will delete ALL videos permanently! ⚠️\n\nAre you sure you want to continue?")) {
+        const confirmation = prompt("THIS IS YOUR LAST WARNING!\n\nTo confirm deletion of ALL videos, please type:\nDELETE ALL VIDEOS");
+        
+        if (confirmation === "DELETE ALL VIDEOS") {
+          deleteAllVideos();
+        } else {
+          alert("Deletion cancelled. No videos were deleted.");
         }
       }
     }
