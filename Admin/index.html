@@ -1,0 +1,664 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>YouTube Playlist Admin Panel</title>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-database-compat.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <style>
+    :root {
+      --primary-color: #ff0000;
+      --primary-dark: #cc0000;
+      --success-color: #4caf50;
+      --success-dark: #3d8b40;
+      --danger-color: #d32f2f;
+      --danger-dark: #b71c1c;
+      --dark-1: #0f0f0f;
+      --dark-2: #181818;
+      --dark-3: #212121;
+      --dark-4: #3d3d3d;
+      --light-1: #ffffff;
+      --light-2: #f1f1f1;
+      --light-3: #e5e5e5;
+      --light-4: #cccccc;
+      --text-primary: #f1f1f1;
+      --text-secondary: #aaaaaa;
+      --text-dark: #030303;
+      --shadow-color: rgba(0, 0, 0, 0.3);
+    }
+    
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    
+    body {
+      font-family: 'Roboto', sans-serif;
+      background-color: var(--dark-1);
+      color: var(--text-primary);
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+    }
+    
+    /* Header Styles */
+    .header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 16px 0;
+      margin-bottom: 24px;
+      border-bottom: 1px solid var(--dark-3);
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+    }
+    
+    .logo-icon {
+      color: var(--primary-color);
+      font-size: 2rem;
+      margin-right: 10px;
+    }
+    
+    .logo-text {
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+    
+    .admin-actions {
+      display: flex;
+      gap: 12px;
+    }
+    
+    .btn {
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background-color 0.2s;
+    }
+    
+    .btn-primary {
+      background-color: var(--primary-color);
+      color: white;
+    }
+    
+    .btn-primary:hover {
+      background-color: var(--primary-dark);
+    }
+    
+    .btn-success {
+      background-color: var(--success-color);
+      color: white;
+    }
+    
+    .btn-success:hover {
+      background-color: var(--success-dark);
+    }
+    
+    .btn-danger {
+      background-color: var(--danger-color);
+      color: white;
+    }
+    
+    .btn-danger:hover {
+      background-color: var(--danger-dark);
+    }
+    
+    /* Add Video Form */
+    .add-video-form {
+      background-color: var(--dark-3);
+      padding: 20px;
+      border-radius: 8px;
+      margin-bottom: 24px;
+      box-shadow: 0 2px 4px var(--shadow-color);
+    }
+    
+    .form-title {
+      font-size: 1.2rem;
+      margin-bottom: 16px;
+      color: var(--text-primary);
+    }
+    
+    .form-group {
+      margin-bottom: 16px;
+    }
+    
+    .form-label {
+      display: block;
+      margin-bottom: 8px;
+      color: var(--text-primary);
+    }
+    
+    .form-input {
+      width: 100%;
+      padding: 10px 12px;
+      border: 1px solid var(--dark-4);
+      border-radius: 4px;
+      background-color: var(--dark-2);
+      color: var(--text-primary);
+      font-size: 1rem;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--primary-color);
+    }
+    
+    /* Stats Container */
+    .stats-container {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .stat-card {
+      background-color: var(--dark-3);
+      padding: 16px;
+      border-radius: 8px;
+      box-shadow: 0 2px 4px var(--shadow-color);
+    }
+    
+    .stat-title {
+      color: var(--text-secondary);
+      font-size: 0.9rem;
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 1.5rem;
+      font-weight: 500;
+    }
+    
+    /* Videos Table */
+    .videos-table {
+      width: 100%;
+      border-collapse: collapse;
+      background-color: var(--dark-2);
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 2px 4px var(--shadow-color);
+    }
+    
+    .videos-table th {
+      background-color: var(--dark-3);
+      padding: 12px 16px;
+      text-align: left;
+      font-weight: 500;
+    }
+    
+    .videos-table td {
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--dark-3);
+    }
+    
+    .videos-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .videos-table tr:hover {
+      background-color: var(--dark-3);
+    }
+    
+    .video-thumbnail {
+      width: 120px;
+      height: 68px;
+      background-color: var(--dark-4);
+      background-size: cover;
+      background-position: center;
+      border-radius: 4px;
+    }
+    
+    .video-info {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .video-details {
+      flex: 1;
+    }
+    
+    .video-title {
+      font-weight: 500;
+      margin-bottom: 4px;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+    
+    .video-url {
+      color: var(--text-secondary);
+      font-size: 0.8rem;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+    
+    .video-stats {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: var(--text-secondary);
+    }
+    
+    .action-buttons {
+      display: flex;
+      gap: 8px;
+    }
+    
+    /* Empty State */
+    .empty-state {
+      padding: 40px 20px;
+      text-align: center;
+      color: var(--text-secondary);
+      background-color: var(--dark-2);
+      border-radius: 8px;
+    }
+    
+    /* Responsive Styles */
+    @media (max-width: 768px) {
+      .videos-table {
+        display: block;
+        overflow-x: auto;
+      }
+      
+      .header {
+        flex-direction: column;
+        gap: 16px;
+        align-items: flex-start;
+      }
+      
+      .admin-actions {
+        width: 100%;
+        flex-direction: column;
+      }
+      
+      .btn {
+        width: 100%;
+        justify-content: center;
+      }
+    }
+    
+    @media (max-width: 480px) {
+      .video-info {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+      
+      .video-thumbnail {
+        width: 100%;
+        height: 120px;
+      }
+      
+      .action-buttons {
+        width: 100%;
+        justify-content: flex-end;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <!-- Header -->
+    <header class="header">
+      <div class="logo">
+        <i class="fab fa-youtube logo-icon"></i>
+        <span class="logo-text">Playlist Admin</span>
+      </div>
+      
+      <div class="admin-actions">
+        <button class="btn btn-primary" onclick="showAddForm()">
+          <i class="fas fa-plus"></i>
+          <span>Add Video</span>
+        </button>
+        <button class="btn btn-danger" onclick="confirmDeleteAll()">
+          <i class="fas fa-trash-alt"></i>
+          <span>Delete All</span>
+        </button>
+      </div>
+    </header>
+    
+    <!-- Add Video Form (Initially hidden) -->
+    <div class="add-video-form" id="addVideoForm" style="display: none;">
+      <h3 class="form-title">Add New Video</h3>
+      <div class="form-group">
+        <label for="videoUrl" class="form-label">YouTube Video URL</label>
+        <input type="text" id="videoUrl" class="form-input" placeholder="https://www.youtube.com/watch?v=...">
+      </div>
+      <div class="form-group">
+        <label for="videoTitle" class="form-label">Custom Title (Optional)</label>
+        <input type="text" id="videoTitle" class="form-input" placeholder="Leave blank to use YouTube title">
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-success" onclick="addVideo()">
+          <i class="fas fa-save"></i>
+          <span>Save Video</span>
+        </button>
+        <button class="btn btn-danger" onclick="hideAddForm()">
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+    
+    <!-- Main Content -->
+    <div class="admin-content">
+      <div class="stats-container">
+        <div class="stat-card">
+          <div class="stat-title">Total Videos</div>
+          <div class="stat-value" id="totalVideos">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Total Watch Time</div>
+          <div class="stat-value" id="totalWatchTime">0</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-title">Last Added</div>
+          <div class="stat-value" id="lastAdded">-</div>
+        </div>
+      </div>
+      
+      <table class="videos-table" id="videosTable">
+        <thead>
+          <tr>
+            <th>Video</th>
+            <th>Details</th>
+            <th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="videosList">
+          <tr>
+            <td colspan="3">
+              <div class="empty-state">Loading videos...</div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </div>
+
+  <script>
+    // Firebase config
+    const firebaseConfig = {
+      databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    const db = firebase.database();
+
+    // Helper functions
+    function getVideoId(link) {
+      try {
+        let url = new URL(link);
+        if (url.hostname.includes("youtu.be")) {
+          return url.pathname.substring(1);
+        } else {
+          return url.searchParams.get("v");
+        }
+      } catch (e) {
+        return null;
+      }
+    }
+
+    function formatTime(seconds) {
+      if (!seconds) return "0:00";
+      const hrs = Math.floor(seconds / 3600);
+      const mins = Math.floor((seconds % 3600) / 60);
+      const secs = Math.floor(seconds % 60);
+      
+      if (hrs > 0) {
+        return `${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      } else {
+        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      }
+    }
+
+    function formatDate(timestamp) {
+      if (!timestamp) return "Unknown";
+      const date = new Date(timestamp);
+      return date.toLocaleString();
+    }
+
+    function calculateTotalWatchTime(videos) {
+      return videos.reduce((total, video) => total + (video.data.time || 0), 0);
+    }
+
+    function findLastAdded(videos) {
+      if (videos.length === 0) return "-";
+      let lastAdded = videos[0];
+      for (const video of videos) {
+        if (video.data.addedAt > lastAdded.data.addedAt) {
+          lastAdded = video;
+        }
+      }
+      return formatDate(lastAdded.data.addedAt);
+    }
+
+    // Form visibility control
+    function showAddForm() {
+      document.getElementById('addVideoForm').style.display = 'block';
+      document.getElementById('videoUrl').focus();
+    }
+
+    function hideAddForm() {
+      document.getElementById('addVideoForm').style.display = 'none';
+      document.getElementById('videoUrl').value = '';
+      document.getElementById('videoTitle').value = '';
+    }
+
+    // Video management functions
+    function addVideo() {
+      const url = document.getElementById('videoUrl').value.trim();
+      const customTitle = document.getElementById('videoTitle').value.trim();
+      const videoId = getVideoId(url);
+
+      if (!videoId) {
+        alert("Please enter a valid YouTube URL");
+        return;
+      }
+
+      const videoRef = db.ref("videos/" + videoId);
+      const videoData = {
+        url: url,
+        time: 0,
+        addedAt: firebase.database.ServerValue.TIMESTAMP,
+        lastWatched: firebase.database.ServerValue.TIMESTAMP
+      };
+
+      if (customTitle) {
+        videoData.title = customTitle;
+      }
+
+      videoRef.set(videoData)
+        .then(() => {
+          alert("Video added successfully!");
+          hideAddForm();
+          loadAllVideos();
+        })
+        .catch(error => {
+          console.error("Error adding video:", error);
+          alert("Failed to add video. Please try again.");
+        });
+    }
+
+    function loadAllVideos() {
+      db.ref("videos").once("value").then(snapshot => {
+        const videosList = document.getElementById("videosList");
+        videosList.innerHTML = "";
+        
+        if (!snapshot.exists()) {
+          videosList.innerHTML = `
+            <tr>
+              <td colspan="3">
+                <div class="empty-state">No videos found in the database</div>
+              </td>
+            </tr>
+          `;
+          updateStats([], 0);
+          return;
+        }
+
+        const videos = [];
+        snapshot.forEach(child => {
+          const vid = child.key;
+          const data = child.val();
+          videos.push({
+            id: vid,
+            data: data
+          });
+        });
+
+        updateStats(videos, calculateTotalWatchTime(videos));
+        renderVideos(videos);
+      }).catch(error => {
+        console.error("Error loading videos:", error);
+        showError("Error loading videos. Please try again.");
+      });
+    }
+
+    function renderVideos(videos) {
+      const videosList = document.getElementById("videosList");
+      videosList.innerHTML = "";
+
+      if (videos.length === 0) {
+        videosList.innerHTML = `
+          <tr>
+            <td colspan="3">
+              <div class="empty-state">No videos found</div>
+            </td>
+          </tr>
+        `;
+        return;
+      }
+
+      videos.forEach(video => {
+        const row = document.createElement("tr");
+        const watchedTime = formatTime(video.data.time);
+        const addedDate = formatDate(video.data.addedAt);
+        const lastWatched = formatDate(video.data.lastWatched);
+        
+        row.innerHTML = `
+          <td>
+            <div class="video-info">
+              <div class="video-thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)"></div>
+            </div>
+          </td>
+          <td>
+            <div class="video-details">
+              <div class="video-title">${video.data.title || video.data.url}</div>
+              <div class="video-url">${video.data.url}</div>
+              <div class="video-stats">
+                <div>Added: ${addedDate}</div>
+                <div>Last watched: ${lastWatched || 'Never'}</div>
+                <div>Watched: ${watchedTime}</div>
+              </div>
+            </div>
+          </td>
+          <td>
+            <div class="action-buttons">
+              <button class="btn btn-danger" onclick="confirmDeleteVideo('${video.id}')">
+                <i class="fas fa-trash-alt"></i>
+                <span>Delete</span>
+              </button>
+            </div>
+          </td>
+        `;
+        videosList.appendChild(row);
+      });
+    }
+
+    function updateStats(videos, totalWatchTime) {
+      document.getElementById("totalVideos").textContent = videos.length;
+      document.getElementById("totalWatchTime").textContent = formatTime(totalWatchTime);
+      document.getElementById("lastAdded").textContent = findLastAdded(videos);
+    }
+
+    function showError(message) {
+      const videosList = document.getElementById("videosList");
+      videosList.innerHTML = `
+        <tr>
+          <td colspan="3">
+            <div class="empty-state">${message}</div>
+          </td>
+        </tr>
+      `;
+    }
+
+    // Delete functions
+    function deleteVideo(videoId) {
+      db.ref("videos/" + videoId).remove()
+        .then(() => {
+          console.log("Video deleted successfully");
+          loadAllVideos();
+        })
+        .catch(error => {
+          console.error("Error deleting video:", error);
+          alert("Failed to delete video. Please try again.");
+        });
+    }
+
+    function deleteAllVideos() {
+      db.ref("videos").remove()
+        .then(() => {
+          console.log("All videos deleted successfully");
+          loadAllVideos();
+        })
+        .catch(error => {
+          console.error("Error deleting all videos:", error);
+          alert("Failed to delete all videos. Please try again.");
+        });
+    }
+
+    // Confirmation dialogs
+    function confirmDeleteVideo(videoId) {
+      if (confirm("Are you sure you want to delete this video?\nThis action cannot be undone.")) {
+        deleteVideo(videoId);
+      }
+    }
+
+    function confirmDeleteAll() {
+      if (confirm("WARNING: This will delete ALL videos from the database.\n\nAre you sure you want to continue?")) {
+        if (confirm("THIS IS YOUR LAST WARNING!\nAll videos will be permanently deleted.\n\nType 'DELETE ALL' to confirm.")) {
+          const confirmation = prompt("Please type 'DELETE ALL' to confirm:");
+          if (confirmation === "DELETE ALL") {
+            deleteAllVideos();
+          } else {
+            alert("Deletion cancelled. The videos were NOT deleted.");
+          }
+        }
+      }
+    }
+
+    // Initialize the admin panel
+    window.onload = function() {
+      loadAllVideos();
+      
+      // Handle Enter key in form
+      document.getElementById('videoUrl').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+          addVideo();
+        }
+      });
+    };
+  </script>
+</body>
+</html>
