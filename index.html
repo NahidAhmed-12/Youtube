@@ -634,320 +634,374 @@
     </div>
   </div>
 
+  
   <script>
     // Firebase config
-    const firebaseConfig = {
-      databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
-    };
+const firebaseConfig = {
+  databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
+};
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+// Initialize Firebase
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    let player;
-    let videoId = '';
-    let currentPlayingItem = null;
-    let lastWatchedVideoId = null;
-    let isSaving = false;
-    let playlistVideos = [];
-    let currentVideoIndex = -1;
+// Global variables
+let player;
+let videoId = '';
+let currentPlayingItem = null;
+let lastWatchedVideoId = null;
+let isSaving = false;
+let playlistVideos = [];
+let currentVideoIndex = -1;
+let saveTimeInterval;
 
-    // Function to extract YouTube video ID from different formats
-    function getVideoId(link) {
-      try {
-        let url = new URL(link);
-        if (url.hostname.includes("youtu.be")) {
-          return url.pathname.substring(1); // youtu.be/VIDEO_ID
-        } else {
-          return url.searchParams.get("v");
-        }
-      } catch (e) {
-        return null;
+// Initialize the app
+function initApp() {
+  setupEventListeners();
+  setupRealtimeListener();
+  checkUrlHash();
+}
+
+// Set up event listeners
+function setupEventListeners() {
+  // Save time when page is about to unload
+  window.addEventListener('beforeunload', function(e) {
+    saveCurrentTime();
+    clearInterval(saveTimeInterval);
+  });
+  
+  // Handle hash changes
+  window.addEventListener('hashchange', function() {
+    const hashVideoId = window.location.hash.substring(1);
+    if (hashVideoId && hashVideoId !== videoId) {
+      loadSavedVideo(hashVideoId);
+    }
+  });
+}
+
+// Check URL hash on initial load
+function checkUrlHash() {
+  const hashVideoId = window.location.hash.substring(1);
+  if (hashVideoId) {
+    loadSavedVideo(hashVideoId);
+  }
+}
+
+// Extract YouTube video ID from URL
+function getVideoId(link) {
+  try {
+    let url = new URL(link);
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.substring(1);
+    } else {
+      return url.searchParams.get("v");
+    }
+  } catch (e) {
+    return null;
+  }
+}
+
+// Save video to Firebase
+function saveAndLoadVideo() {
+  const link = document.getElementById("videoLink").value.trim();
+  videoId = getVideoId(link);
+
+  if (!videoId) {
+    alert("Please enter a valid YouTube link.");
+    return;
+  }
+
+  const videoRef = db.ref("videos/" + videoId);
+  videoRef.set({
+    url: link,
+    time: 0,
+    addedAt: firebase.database.ServerValue.TIMESTAMP,
+    lastWatched: firebase.database.ServerValue.TIMESTAMP,
+    title: "Loading...",
+    channel: "Loading..."
+  }).then(() => {
+    document.getElementById("videoLink").value = "";
+    // Update video metadata after a short delay to allow Firebase to process
+    setTimeout(() => updateVideoMetadata(videoId), 1000);
+  });
+}
+
+// Load YouTube player
+function loadPlayer(videoId, startTime) {
+  if (player) {
+    player.loadVideoById({ videoId: videoId, startSeconds: startTime });
+  } else {
+    player = new YT.Player('player', {
+      height: '390',
+      width: '640',
+      videoId: videoId,
+      playerVars: {
+        start: startTime,
+        rel: 0,
+        modestbranding: 1
+      },
+      events: {
+        'onStateChange': onPlayerStateChange,
+        'onReady': onPlayerReady
       }
+    });
+  }
+  
+  // Update last watched timestamp
+  db.ref("videos/" + videoId).update({
+    lastWatched: firebase.database.ServerValue.TIMESTAMP
+  });
+  
+  lastWatchedVideoId = videoId;
+  window.location.hash = videoId;
+  
+  // Update current video index
+  currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
+  updateNavButtons();
+}
+
+// Save current playback time to Firebase
+function saveCurrentTime() {
+  if (!player || !videoId || isSaving) return;
+  
+  isSaving = true;
+  const currentTime = Math.floor(player.getCurrentTime());
+  
+  db.ref("videos/" + videoId).update({
+    time: currentTime,
+    lastWatched: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    isSaving = false;
+    updateProgressBars();
+  }).catch(error => {
+    console.error("Error saving time:", error);
+    isSaving = false;
+  });
+}
+
+// Player event handlers
+function onPlayerReady(event) {
+  // Set up periodic saving (every 10 seconds)
+  saveTimeInterval = setInterval(saveCurrentTime, 10000);
+  
+  // Update video metadata if not already set
+  if (!playlistVideos[currentVideoIndex]?.data?.title || 
+      playlistVideos[currentVideoIndex].data.title === "Loading...") {
+    updateVideoMetadata(videoId);
+  }
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+    saveCurrentTime();
+  }
+  
+  if (event.data === YT.PlayerState.PLAYING) {
+    highlightCurrentVideo();
+  }
+}
+
+// Set up Firebase realtime listener
+function setupRealtimeListener() {
+  db.ref("videos").orderByChild("addedAt").on("value", (snapshot) => {
+    const list = document.getElementById("videoList");
+    list.innerHTML = "";
+
+    if (!snapshot.exists()) {
+      showEmptyState();
+      return;
     }
 
-    function saveAndLoadVideo() {
-      const link = document.getElementById("videoLink").value.trim();
-      videoId = getVideoId(link);
+    playlistVideos = [];
+    let mostRecentVideo = null;
+    let mostRecentTime = 0;
 
-      if (!videoId) {
-        alert("Please enter a valid YouTube link.");
-        return;
-      }
-
-      const videoRef = db.ref("videos/" + videoId);
-      videoRef.set({
-        url: link,
-        time: 0,
-        addedAt: firebase.database.ServerValue.TIMESTAMP,
-        lastWatched: firebase.database.ServerValue.TIMESTAMP
-      }).then(() => {
-        document.getElementById("videoLink").value = "";
+    snapshot.forEach(child => {
+      const vid = child.key;
+      const data = child.val();
+      
+      playlistVideos.push({
+        id: vid,
+        data: data,
+        duration: data.duration || "0:00"
       });
-    }
 
-    function loadPlayer(videoId, startTime) {
-      if (player) {
-        player.loadVideoById({ videoId: videoId, startSeconds: startTime });
-      } else {
-        player = new YT.Player('player', {
-          height: '390',
-          width: '640',
-          videoId: videoId,
-          playerVars: {
-            start: startTime,
-            rel: 0,
-            modestbranding: 1
-          },
-          events: {
-            'onStateChange': onPlayerStateChange,
-            'onReady': onPlayerReady
-          }
-        });
+      // Track the most recently watched video
+      if (data.lastWatched && data.lastWatched > mostRecentTime) {
+        mostRecentTime = data.lastWatched;
+        mostRecentVideo = vid;
       }
+    });
+
+    // Update playlist count
+    document.getElementById("playlistCount").textContent = 
+      `${playlistVideos.length} ${playlistVideos.length === 1 ? 'video' : 'videos'}`;
+
+    // Render all videos
+    playlistVideos.forEach((video, index) => {
+      const item = document.createElement("div");
+      item.className = "playlist-item";
+      item.setAttribute("data-video-id", video.id);
+      item.onclick = () => loadSavedVideo(video.id);
       
-      // Update last watched timestamp
-      db.ref("videos/" + videoId + "/lastWatched").set(firebase.database.ServerValue.TIMESTAMP);
-      lastWatchedVideoId = videoId;
+      item.innerHTML = `
+        <div class="thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)" 
+             data-duration="${video.duration}"></div>
+        <div class="video-info">
+          <div class="video-title">${video.data.title || "Untitled Video"}</div>
+          <div class="video-channel">${video.data.channel || "Unknown channel"}</div>
+          <div class="progress-container">
+            <div class="progress-info">
+              <span>${formatTime(video.data.time || 0)}</span>
+              <span>${video.duration}</span>
+            </div>
+            <div class="progress-bar">
+              <div class="progress" style="width: ${(video.data.time / (video.data.durationSec || 1)) * 100}%"></div>
+            </div>
+          </div>
+        </div>
+      `;
       
-      // Update URL hash
-      window.location.hash = videoId;
-      
-      // Update current video index
+      list.appendChild(item);
+    });
+
+    // Auto-play logic
+    const hashVideoId = window.location.hash.substring(1);
+    
+    if (hashVideoId) {
+      // Priority 1: Video from URL hash
+      loadSavedVideo(hashVideoId);
+    } else if (mostRecentVideo && !videoId) {
+      // Priority 2: Most recently watched video
+      loadSavedVideo(mostRecentVideo);
+    } else if (playlistVideos.length > 0 && !videoId) {
+      // Priority 3: First video in playlist
+      loadSavedVideo(playlistVideos[0].id);
+    }
+    
+    // Update current video index if we have a videoId
+    if (videoId) {
       currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
       updateNavButtons();
     }
+  });
+}
 
-    function saveCurrentTime() {
-      if (!player || !videoId || isSaving) return;
-      
-      isSaving = true;
-      const currentTime = Math.floor(player.getCurrentTime());
-      
-      db.ref("videos/" + videoId).update({
-        time: currentTime,
-        lastWatched: firebase.database.ServerValue.TIMESTAMP
-      }).then(() => {
-        console.log("Time saved:", currentTime);
-        isSaving = false;
-        updateProgressBars();
-      }).catch(error => {
-        console.error("Error saving time:", error);
-        isSaving = false;
-      });
+// Show empty state
+function showEmptyState() {
+  const list = document.getElementById("videoList");
+  list.innerHTML = `
+    <div class="empty-state">
+      <div class="empty-icon">
+        <i class="fas fa-music"></i>
+      </div>
+      <div class="empty-title">Your playlist is empty</div>
+      <div class="empty-text">Add YouTube videos to create your personalized playlist and start watching</div>
+      <button class="empty-button" onclick="document.getElementById('videoLink').focus()">
+        <i class="fas fa-plus"></i> Add First Video
+      </button>
+    </div>
+  `;
+  document.getElementById("playlistCount").textContent = "0 videos";
+  playlistVideos = [];
+  currentVideoIndex = -1;
+  updateNavButtons();
+}
+
+// Format time as MM:SS
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+// Load video from Firebase
+function loadSavedVideo(vid) {
+  videoId = vid;
+  db.ref("videos/" + vid).once("value").then(snapshot => {
+    const video = snapshot.val();
+    const startTime = video.time || 0;
+    loadPlayer(videoId, startTime);
+    highlightCurrentVideo();
+  });
+}
+
+// Navigation functions
+function playNextVideo() {
+  if (currentVideoIndex < playlistVideos.length - 1) {
+    const nextVideo = playlistVideos[currentVideoIndex + 1];
+    loadSavedVideo(nextVideo.id);
+  }
+}
+
+function playPreviousVideo() {
+  if (currentVideoIndex > 0) {
+    const prevVideo = playlistVideos[currentVideoIndex - 1];
+    loadSavedVideo(prevVideo.id);
+  }
+}
+
+function updateNavButtons() {
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  
+  prevBtn.disabled = currentVideoIndex <= 0;
+  nextBtn.disabled = currentVideoIndex >= playlistVideos.length - 1 || currentVideoIndex === -1;
+}
+
+// Highlight current video in playlist
+function highlightCurrentVideo() {
+  if (currentPlayingItem) {
+    currentPlayingItem.classList.remove("active");
+  }
+  
+  const items = document.querySelectorAll(".playlist-item");
+  items.forEach(item => {
+    if (item.getAttribute("data-video-id") === videoId) {
+      item.classList.add("active");
+      currentPlayingItem = item;
+      // Scroll to the item
+      item.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
+  });
+}
 
-    function onPlayerReady(event) {
-      updateThumbnails();
+// Update progress bars for all videos
+function updateProgressBars() {
+  db.ref("videos").once("value").then(snapshot => {
+    snapshot.forEach(child => {
+      const vid = child.key;
+      const data = child.val();
+      const progressBar = document.querySelector(`.playlist-item[data-video-id="${vid}"] .progress`);
+      const timeDisplay = document.querySelector(`.playlist-item[data-video-id="${vid}"] .progress-info span:first-child`);
       
-      // Set up periodic saving (every 10 seconds)
-      setInterval(saveCurrentTime, 10000);
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-        saveCurrentTime();
+      if (progressBar && timeDisplay) {
+        const percentage = (data.time / (data.durationSec || 1)) * 100;
+        progressBar.style.width = `${percentage}%`;
+        timeDisplay.textContent = formatTime(data.time);
       }
-      
-      if (event.data === YT.PlayerState.PLAYING) {
-        highlightCurrentVideo();
-      }
-    }
-
-    function setupRealtimeListener() {
-      db.ref("videos").orderByChild("addedAt").on("value", (snapshot) => {
-        const list = document.getElementById("videoList");
-        list.innerHTML = "";
-
-        if (!snapshot.exists()) {
-          list.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-icon">
-                <i class="fas fa-music"></i>
-              </div>
-              <div class="empty-title">Your playlist is empty</div>
-              <div class="empty-text">Add YouTube videos to create your personalized playlist and start watching</div>
-              <button class="empty-button" onclick="document.getElementById('videoLink').focus()">
-                <i class="fas fa-plus"></i> Add First Video
-              </button>
-            </div>
-          `;
-          document.getElementById("playlistCount").textContent = "0 videos";
-          playlistVideos = [];
-          currentVideoIndex = -1;
-          updateNavButtons();
-          return;
-        }
-
-        playlistVideos = [];
-        let mostRecentVideo = null;
-        let mostRecentTime = 0;
-
-        snapshot.forEach(child => {
-          const vid = child.key;
-          const data = child.val();
-          const duration = data.duration || "0:00";
-          
-          playlistVideos.push({
-            id: vid,
-            data: data,
-            duration: duration
-          });
-
-          // Track the most recently watched video
-          if (data.lastWatched && data.lastWatched > mostRecentTime) {
-            mostRecentTime = data.lastWatched;
-            mostRecentVideo = vid;
-          }
-        });
-
-        // Update playlist count
-        document.getElementById("playlistCount").textContent = `${playlistVideos.length} ${playlistVideos.length === 1 ? 'video' : 'videos'}`;
-
-        // Render all videos
-        playlistVideos.forEach((video, index) => {
-          const item = document.createElement("div");
-          item.className = "playlist-item";
-          item.setAttribute("data-video-id", video.id);
-          item.onclick = () => loadSavedVideo(video.id);
-          
-          item.innerHTML = `
-            <div class="thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)" data-duration="${video.duration}"></div>
-            <div class="video-info">
-              <div class="video-title">${video.data.title || "Untitled Video"}</div>
-              <div class="video-channel">${video.data.channel || "Unknown channel"}</div>
-              <div class="progress-container">
-                <div class="progress-info">
-                  <span>${formatTime(video.data.time || 0)}</span>
-                  <span>${video.duration}</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress" style="width: ${(video.data.time / (video.data.durationSec || 1)) * 100}%"></div>
-                </div>
-              </div>
-            </div>
-          `;
-          
-          list.appendChild(item);
-        });
-
-        // Auto-play the most recently watched video if available and no hash in URL
-        if (mostRecentVideo && !videoId && !window.location.hash) {
-          loadSavedVideo(mostRecentVideo);
-        }
-        
-        // Update current video index if we have a videoId but no index
-        if (videoId && currentVideoIndex === -1) {
-          currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
-          updateNavButtons();
-        }
-      });
-    }
-
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    }
-
-    function loadSavedVideo(vid) {
-      videoId = vid;
-      db.ref("videos/" + vid).once("value").then(snapshot => {
-        const video = snapshot.val();
-        const startTime = video.time || 0;
-        loadPlayer(videoId, startTime);
-        highlightCurrentVideo();
-      });
-    }
-
-    function playNextVideo() {
-      if (currentVideoIndex < playlistVideos.length - 1) {
-        const nextVideo = playlistVideos[currentVideoIndex + 1];
-        loadSavedVideo(nextVideo.id);
-      }
-    }
-
-    function playPreviousVideo() {
-      if (currentVideoIndex > 0) {
-        const prevVideo = playlistVideos[currentVideoIndex - 1];
-        loadSavedVideo(prevVideo.id);
-      }
-    }
-
-    function updateNavButtons() {
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
-      
-      prevBtn.disabled = currentVideoIndex <= 0;
-      nextBtn.disabled = currentVideoIndex >= playlistVideos.length - 1 || currentVideoIndex === -1;
-    }
-
-    function highlightCurrentVideo() {
-      if (currentPlayingItem) {
-        currentPlayingItem.classList.remove("active");
-      }
-      
-      const items = document.querySelectorAll(".playlist-item");
-      items.forEach(item => {
-        if (item.getAttribute("data-video-id") === videoId) {
-          item.classList.add("active");
-          currentPlayingItem = item;
-          // Scroll to the item if it's not in view
-          item.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-      });
-    }
-
-    function updateProgressBars() {
-      db.ref("videos").once("value").then(snapshot => {
-        snapshot.forEach(child => {
-          const vid = child.key;
-          const data = child.val();
-          const progressBar = document.querySelector(`.playlist-item[data-video-id="${vid}"] .progress`);
-          const timeDisplay = document.querySelector(`.playlist-item[data-video-id="${vid}"] .progress-info span:first-child`);
-          
-          if (progressBar && timeDisplay) {
-            const percentage = (data.time / (data.durationSec || 1)) * 100;
-            progressBar.style.width = `${percentage}%`;
-            timeDisplay.textContent = formatTime(data.time);
-          }
-        });
-      });
-    }
-
-    function updateThumbnails() {
-      db.ref("videos").once("value").then(snapshot => {
-        snapshot.forEach(child => {
-          const vid = child.key;
-          const videoRef = db.ref("videos/" + vid);
-          
-          // Only update if we don't have duration info yet
-          if (!child.val().duration) {
-            // This would require YouTube API to get video duration
-            // For now we'll just set a placeholder
-            videoRef.update({
-              duration: "0:00",
-              durationSec: 1
-            });
-          }
-        });
-      });
-    }
-
-    // Save time when page is about to unload
-    window.addEventListener('beforeunload', function(e) {
-      saveCurrentTime();
     });
+  });
+}
 
-    // Load video list on page load
-    window.onload = function() {
-      setupRealtimeListener();
-      
-      // Check if there's a video ID in URL hash
-      const hashVideoId = window.location.hash.substring(1);
-      if (hashVideoId) {
-        loadSavedVideo(hashVideoId);
-      }
-    };
+// Update video metadata (title, channel, duration)
+function updateVideoMetadata(videoId) {
+  // This would require YouTube API to get full video details
+  // For now we'll just update with basic info
+  const videoRef = db.ref("videos/" + videoId);
+  
+  videoRef.update({
+    title: "YouTube Video",
+    channel: "YouTube Channel",
+    duration: "5:00", // Placeholder
+    durationSec: 300  // Placeholder (5 minutes)
+  });
+}
+
+// Initialize the app when YouTube API is ready
+function onYouTubeIframeAPIReady() {
+  initApp();
+}
   </script>
 </body>
 </html>
