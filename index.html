@@ -10,7 +10,7 @@
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 <style>
-  :root {
+    :root {
   --primary: #FF4D4D;
   --primary-dark: #E04444;
   --primary-light: rgba(255, 77, 77, 0.15);
@@ -753,9 +753,8 @@ header {
         </div>
         <div class="logo-text">Playlist Player</div>
       </a>
+
     </header>
-    
-  
     
     <div class="main-content">
       <div class="player-section">
@@ -816,6 +815,7 @@ header {
     let isSaving = false;
     let playlistVideos = [];
     let currentVideoIndex = -1;
+    let lastUpdateTime = 0;
 
     // Function to extract YouTube video ID from different formats
     function getVideoId(link) {
@@ -845,7 +845,9 @@ header {
         url: link,
         time: 0,
         addedAt: firebase.database.ServerValue.TIMESTAMP,
-        lastWatched: firebase.database.ServerValue.TIMESTAMP
+        lastWatched: firebase.database.ServerValue.TIMESTAMP,
+        duration: "0:00",
+        durationSec: 1
       }).then(() => {
         document.getElementById("videoLink").value = "";
       });
@@ -886,8 +888,14 @@ header {
     function saveCurrentTime() {
       if (!player || !videoId || isSaving) return;
       
-      isSaving = true;
       const currentTime = Math.floor(player.getCurrentTime());
+      const now = Date.now();
+      
+      // Only save if at least 5 seconds have passed since last save
+      if (now - lastUpdateTime < 5000) return;
+      
+      isSaving = true;
+      lastUpdateTime = now;
       
       db.ref("videos/" + videoId).update({
         time: currentTime,
@@ -895,7 +903,7 @@ header {
       }).then(() => {
         console.log("Time saved:", currentTime);
         isSaving = false;
-        updateProgressBars();
+        updateProgressBarForVideo(videoId, currentTime);
       }).catch(error => {
         console.error("Error saving time:", error);
         isSaving = false;
@@ -903,10 +911,19 @@ header {
     }
 
     function onPlayerReady(event) {
-      updateThumbnails();
+      // Set up periodic saving (every 5 seconds)
+      setInterval(saveCurrentTime, 5000);
       
-      // Set up periodic saving (every 10 seconds)
-      setInterval(saveCurrentTime, 10000);
+      // Update current video's duration if not set
+      if (player && player.getDuration) {
+        const duration = player.getDuration();
+        if (duration > 0) {
+          db.ref("videos/" + videoId).update({
+            duration: formatTime(duration),
+            durationSec: duration
+          });
+        }
+      }
     }
 
     function onPlayerStateChange(event) {
@@ -922,21 +939,22 @@ header {
     function setupRealtimeListener() {
       db.ref("videos").orderByChild("addedAt").on("value", (snapshot) => {
         const list = document.getElementById("videoList");
-        list.innerHTML = "";
-
+        
         if (!snapshot.exists()) {
-          list.innerHTML = `
-            <div class="empty-state">
-              <div class="empty-icon">
-                <i class="fas fa-music"></i>
+          if (list.querySelector('.empty-state') === null) {
+            list.innerHTML = `
+              <div class="empty-state">
+                <div class="empty-icon">
+                  <i class="fas fa-music"></i>
+                </div>
+                <div class="empty-title">Your playlist is empty</div>
+                <div class="empty-text">Add YouTube videos to create your personalized playlist and start watching</div>
+                <button class="empty-button" onclick="document.getElementById('videoLink').focus()">
+                  <i class="fas fa-plus"></i> Add First Video
+                </button>
               </div>
-              <div class="empty-title">Your playlist is empty</div>
-              <div class="empty-text">Add YouTube videos to create your personalized playlist and start watching</div>
-              <button class="empty-button" onclick="document.getElementById('videoLink').focus()">
-                <i class="fas fa-plus"></i> Add First Video
-              </button>
-            </div>
-          `;
+            `;
+          }
           document.getElementById("playlistCount").textContent = "0 videos";
           playlistVideos = [];
           currentVideoIndex = -1;
@@ -944,7 +962,7 @@ header {
           return;
         }
 
-        playlistVideos = [];
+        const newPlaylistVideos = [];
         let mostRecentVideo = null;
         let mostRecentTime = 0;
 
@@ -953,7 +971,7 @@ header {
           const data = child.val();
           const duration = data.duration || "0:00";
           
-          playlistVideos.push({
+          newPlaylistVideos.push({
             id: vid,
             data: data,
             duration: duration
@@ -967,34 +985,48 @@ header {
         });
 
         // Update playlist count
-        document.getElementById("playlistCount").textContent = `${playlistVideos.length} ${playlistVideos.length === 1 ? 'video' : 'videos'}`;
+        document.getElementById("playlistCount").textContent = `${newPlaylistVideos.length} ${newPlaylistVideos.length === 1 ? 'video' : 'videos'}`;
 
-        // Render all videos
-        playlistVideos.forEach((video, index) => {
-          const item = document.createElement("div");
-          item.className = "playlist-item";
-          item.setAttribute("data-video-id", video.id);
-          item.onclick = () => loadSavedVideo(video.id);
-          
-          item.innerHTML = `
-            <div class="thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)" data-duration="${video.duration}"></div>
-            <div class="video-info">
-              <div class="video-title">${video.data.title || "Untitled Video"}</div>
-              <div class="video-channel">${video.data.channel || "Unknown channel"}</div>
-              <div class="progress-container">
-                <div class="progress-info">
-                  <span>${formatTime(video.data.time || 0)}</span>
-                  <span>${video.duration}</span>
-                </div>
-                <div class="progress-bar">
-                  <div class="progress" style="width: ${(video.data.time / (video.data.durationSec || 1)) * 100}%"></div>
+        // Only re-render if the playlist has changed
+        if (JSON.stringify(playlistVideos.map(v => v.id)) !== JSON.stringify(newPlaylistVideos.map(v => v.id))) {
+          list.innerHTML = "";
+          newPlaylistVideos.forEach((video, index) => {
+            const item = document.createElement("div");
+            item.className = "playlist-item";
+            if (video.id === videoId) {
+              item.classList.add("active");
+              currentPlayingItem = item;
+            }
+            item.setAttribute("data-video-id", video.id);
+            item.onclick = () => loadSavedVideo(video.id);
+            
+            item.innerHTML = `
+              <div class="thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)" data-duration="${video.duration}"></div>
+              <div class="video-info">
+                <div class="video-title">${video.data.title || "Untitled Video"}</div>
+                <div class="video-channel">${video.data.channel || "Unknown channel"}</div>
+                <div class="progress-container">
+                  <div class="progress-info">
+                    <span>${formatTime(video.data.time || 0)}</span>
+                    <span>${video.duration}</span>
+                  </div>
+                  <div class="progress-bar">
+                    <div class="progress" style="width: ${calculateProgress(video.data.time || 0, video.data.durationSec || 1)}%"></div>
+                  </div>
                 </div>
               </div>
-            </div>
-          `;
-          
-          list.appendChild(item);
-        });
+            `;
+            
+            list.appendChild(item);
+          });
+        } else {
+          // Just update progress bars for existing items
+          newPlaylistVideos.forEach(video => {
+            updateProgressBarForVideo(video.id, video.data.time || 0);
+          });
+        }
+
+        playlistVideos = newPlaylistVideos;
 
         // Auto-play the most recently watched video if available and no hash in URL
         if (mostRecentVideo && !videoId && !window.location.hash) {
@@ -1007,6 +1039,12 @@ header {
           updateNavButtons();
         }
       });
+    }
+
+    function calculateProgress(currentTime, duration) {
+      if (duration <= 0) return 0;
+      const progress = (currentTime / duration) * 100;
+      return Math.min(100, Math.max(0, progress)); // Ensure between 0-100
     }
 
     function formatTime(seconds) {
@@ -1063,40 +1101,26 @@ header {
       });
     }
 
-    function updateProgressBars() {
-      db.ref("videos").once("value").then(snapshot => {
-        snapshot.forEach(child => {
-          const vid = child.key;
-          const data = child.val();
-          const progressBar = document.querySelector(`.playlist-item[data-video-id="${vid}"] .progress`);
-          const timeDisplay = document.querySelector(`.playlist-item[data-video-id="${vid}"] .progress-info span:first-child`);
-          
-          if (progressBar && timeDisplay) {
-            const percentage = (data.time / (data.durationSec || 1)) * 100;
-            progressBar.style.width = `${percentage}%`;
-            timeDisplay.textContent = formatTime(data.time);
-          }
-        });
-      });
-    }
-
-    function updateThumbnails() {
-      db.ref("videos").once("value").then(snapshot => {
-        snapshot.forEach(child => {
-          const vid = child.key;
-          const videoRef = db.ref("videos/" + vid);
-          
-          // Only update if we don't have duration info yet
-          if (!child.val().duration) {
-            // This would require YouTube API to get video duration
-            // For now we'll just set a placeholder
-            videoRef.update({
-              duration: "0:00",
-              durationSec: 1
-            });
-          }
-        });
-      });
+    function updateProgressBarForVideo(vid, currentTime) {
+      const item = document.querySelector(`.playlist-item[data-video-id="${vid}"]`);
+      if (!item) return;
+      
+      const progressBar = item.querySelector('.progress');
+      const timeDisplay = item.querySelector('.progress-info span:first-child');
+      const durationDisplay = item.querySelector('.progress-info span:last-child');
+      
+      if (progressBar && timeDisplay) {
+        // Get duration from data attribute or calculate
+        let duration = 1;
+        const videoData = playlistVideos.find(v => v.id === vid);
+        if (videoData && videoData.data.durationSec) {
+          duration = videoData.data.durationSec;
+        }
+        
+        const percentage = calculateProgress(currentTime, duration);
+        progressBar.style.width = `${percentage}%`;
+        timeDisplay.textContent = formatTime(currentTime);
+      }
     }
 
     // Save time when page is about to unload
@@ -1113,8 +1137,14 @@ header {
       if (hashVideoId) {
         loadSavedVideo(hashVideoId);
       }
+      
+      // Add event listener for Enter key in input field
+      document.getElementById("videoLink").addEventListener("keypress", function(e) {
+        if (e.key === "Enter") {
+          saveAndLoadVideo();
+        }
+      });
     };
   </script>
 </body>
 </html>
-
