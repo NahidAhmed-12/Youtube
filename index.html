@@ -1,5 +1,3 @@
-
-
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -769,6 +767,292 @@ header::after {
     display: flex;
   }
 }
+
+/* Admin Panel Styles */
+.admin-panel {
+  position: fixed;
+  top: 0;
+  right: -400px;
+  width: 400px;
+  height: 100vh;
+  background-color: var(--dark-2);
+  z-index: 1000;
+  transition: var(--transition);
+  box-shadow: var(--shadow-xl);
+  border-left: 1px solid var(--dark-4);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.admin-panel.active {
+  right: 0;
+}
+
+.admin-header {
+  padding: 16px 20px;
+  background-color: var(--dark-3);
+  color: var(--light-1);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid var(--dark-4);
+}
+
+.admin-title {
+  font-size: 17px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.admin-close {
+  background: none;
+  border: none;
+  color: var(--gray-1);
+  font-size: 20px;
+  cursor: pointer;
+  transition: var(--transition);
+}
+
+.admin-close:hover {
+  color: var(--primary);
+  transform: rotate(90deg);
+}
+
+.admin-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 20px;
+}
+
+.admin-section {
+  margin-bottom: 24px;
+}
+
+.admin-section-title {
+  font-size: 15px;
+  font-weight: 600;
+  margin-bottom: 12px;
+  color: var(--light-1);
+  padding-bottom: 8px;
+  border-bottom: 1px solid var(--dark-4);
+}
+
+.playlist-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.playlist-option {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 12px 16px;
+  background-color: var(--dark-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid var(--dark-4);
+}
+
+.playlist-option:hover {
+  background-color: var(--dark-4);
+  border-color: var(--primary);
+}
+
+.playlist-option.active {
+  background-color: rgba(255, 62, 94, 0.1);
+  border-color: var(--primary);
+}
+
+.playlist-option-name {
+  font-weight: 500;
+}
+
+.playlist-option-count {
+  font-size: 12px;
+  color: var(--gray-1);
+  background-color: var(--dark-4);
+  padding: 3px 8px;
+  border-radius: var(--radius-full);
+}
+
+.playlist-videos {
+  display: none;
+  margin-top: 12px;
+  border-left: 2px solid var(--primary);
+  padding-left: 12px;
+}
+
+.playlist-videos.active {
+  display: block;
+}
+
+.playlist-video-item {
+  display: flex;
+  padding: 10px;
+  border-radius: var(--radius-sm);
+  margin-bottom: 8px;
+  background-color: var(--dark-3);
+  border: 1px solid var(--dark-4);
+}
+
+.playlist-video-thumb {
+  width: 80px;
+  height: 45px;
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--radius-sm);
+  margin-right: 12px;
+}
+
+.playlist-video-info {
+  flex: 1;
+}
+
+.playlist-video-title {
+  font-size: 13px;
+  font-weight: 500;
+  margin-bottom: 4px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.playlist-video-duration {
+  font-size: 11px;
+  color: var(--gray-1);
+}
+
+.create-playlist-form {
+  display: flex;
+  gap: 10px;
+  margin-top: 16px;
+}
+
+.create-playlist-form input {
+  flex: 1;
+  padding: 10px 14px;
+  background-color: var(--dark-3);
+  border: 1px solid var(--dark-4);
+  border-radius: var(--radius-md);
+  color: var(--light-2);
+  outline: none;
+}
+
+.create-playlist-form button {
+  background: var(--gradient);
+  color: var(--light-1);
+  border: none;
+  padding: 0 16px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-weight: 600;
+  transition: var(--transition);
+}
+
+.create-playlist-form button:hover {
+  background: linear-gradient(135deg, #FF4D6D 0%, #FF7B8B 50%, #FFA88B 100%);
+}
+
+.overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  z-index: 999;
+  opacity: 0;
+  pointer-events: none;
+  transition: var(--transition);
+}
+
+.overlay.active {
+  opacity: 1;
+  pointer-events: all;
+}
+
+/* Menu Button Styles */
+.menu-button {
+  background: none;
+  border: none;
+  color: var(--primary);
+
+  font-size: 20px;
+  cursor: pointer;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: var(--radius-full);
+}
+
+.menu-button:hover {
+  color: var(--primary);
+  background-color: var(--primary-light);
+  
+  
+}
+
+.current-playlist {
+  font-size: 14px;
+  color: var(--gray-1);
+  margin-left: 10px;
+  display: inline-block;
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* Responsive adjustments for admin panel */
+@media (max-width: 576px) {
+  .admin-panel {
+    width: 100%;
+    right: -100%;
+  }
+  
+  .playlist-video-item {
+    flex-direction: column;
+  }
+  
+  .playlist-video-thumb {
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+    margin-right: 0;
+    margin-bottom: 8px;
+  }
+}
+
+@media (max-width: 640px) {
+  #currentPlaylistName {
+    font-size: 14px;
+    color: #464444;
+    display: block;
+    text-align: center;
+    /* আপনি চাইলে আরও স্টাইল অ্যাড করতে পারেন */
+  }
+}
+
+
+@media (max-width: 640px) {
+ .bar {
+    position: absolute;
+margin-left: 177%;
+margin-top: -48%;
+
+  }
+}
+
+
 </style>
 </head>
 <body>
@@ -780,10 +1064,29 @@ header::after {
         </div>
         <div class="logo-text">Playlist Player</div>
       </a>
+      
+      <div>
+        
+        <span  class="current-playlist" id="currentPlaylistName"> </span>
+        
+        <button class="menu-button" id="menuButton">
+  <span class="bar"><i class="fa-solid fa-bars-staggered"></i></span>        
 
+
+        </button>
+      </div>
     </header>
     
     <div class="main-content">
+      <div style="display:none ;" class="input-section">
+        <div class="input-container">
+          <input type="text" id="videoLink" placeholder="Enter YouTube video URL...">
+          <button onclick="saveAndLoadVideo()">
+            <i class="fas fa-plus"></i> Add Video
+          </button>
+        </div>
+      </div>
+      
       <div class="player-section">
         <div class="player-container">
           <div class="player-wrapper">
@@ -826,352 +1129,584 @@ header::after {
     </div>
   </div>
 
-  <script>
-    // Firebase config
-    const firebaseConfig = {
-      databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
-    };
+  <!-- Admin Panel -->
+  <div class="admin-panel" id="adminPanel">
+    <div class="admin-header">
+      <div class="admin-title">
+        <i class="fas fa-cog"></i> Playlist Manager
+      </div>
+      <button class="admin-close" id="adminClose">
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    
+    <div class="admin-content">
+      <div class="admin-section">
+        <div class="admin-section-title">
+          <i class="fas fa-list"></i> Your Playlists
+        </div>
+        
+        <div class="playlist-selector" id="playlistSelector">
+          <!-- Playlists will be added here dynamically -->
+        </div>
+        
+        <div class="create-playlist-form">
+          <input type="text" id="newPlaylistName" placeholder="New playlist name">
+          <button onclick="createNewPlaylist()">
+            <i class="fas fa-plus"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+  
+  <div class="overlay" id="overlay"></div>
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+ <script>
+// Firebase config
+const firebaseConfig = {
+  databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
+};
 
-    let player;
-    let videoId = '';
-    let currentPlayingItem = null;
-    let lastWatchedVideoId = null;
-    let isSaving = false;
-    let playlistVideos = [];
-    let currentVideoIndex = -1;
-    let lastUpdateTime = 0;
+// Constants
+const LAST_PLAYED_PLAYLIST_KEY = "lastPlayedPlaylist";
 
-    // Function to extract YouTube video ID from different formats
-    function getVideoId(link) {
-      try {
-        let url = new URL(link);
-        if (url.hostname.includes("youtu.be")) {
-          return url.pathname.substring(1); // youtu.be/VIDEO_ID
-        } else {
-          return url.searchParams.get("v");
-        }
-      } catch (e) {
-        return null;
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
+
+let player;
+let videoId = '';
+let currentPlayingItem = null;
+let lastWatchedVideoId = null;
+let isSaving = false;
+let playlistVideos = [];
+let currentVideoIndex = -1;
+let lastUpdateTime = 0;
+let currentPlaylistId = 'default';
+let playlists = {};
+
+// DOM Elements
+const adminPanel = document.getElementById('adminPanel');
+const overlay = document.getElementById('overlay');
+const menuButton = document.getElementById('menuButton');
+const adminClose = document.getElementById('adminClose');
+const playlistSelector = document.getElementById('playlistSelector');
+const currentPlaylistName = document.getElementById('currentPlaylistName');
+
+// Menu button click handler
+menuButton.addEventListener('click', () => {
+  adminPanel.classList.add('active');
+  overlay.classList.add('active');
+});
+
+// Admin close button handler
+adminClose.addEventListener('click', () => {
+  adminPanel.classList.remove('active');
+  overlay.classList.remove('active');
+});
+
+// Overlay click handler
+overlay.addEventListener('click', () => {
+  adminPanel.classList.remove('active');
+  overlay.classList.remove('active');
+});
+
+// Function to extract YouTube video ID from different formats
+function getVideoId(link) {
+  try {
+    let url = new URL(link);
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.substring(1); // youtu.be/VIDEO_ID
+    } else {
+      return url.searchParams.get("v");
+    }
+  } catch (e) {
+    return null;
+  }
+}
+
+function saveAndLoadVideo() {
+  const link = document.getElementById("videoLink").value.trim();
+  videoId = getVideoId(link);
+
+  if (!videoId) {
+    alert("Please enter a valid YouTube link.");
+    return;
+  }
+
+  // Save to the current playlist
+  const videoRef = db.ref(`playlists/${currentPlaylistId}/videos/${videoId}`);
+  videoRef.set({
+    url: link,
+    time: 0,
+    addedAt: firebase.database.ServerValue.TIMESTAMP,
+    lastWatched: firebase.database.ServerValue.TIMESTAMP,
+    duration: "0:00",
+    durationSec: 1
+  }).then(() => {
+    document.getElementById("videoLink").value = "";
+  });
+}
+
+function loadPlayer(videoId, startTime) {
+  if (player) {
+    player.loadVideoById({ videoId: videoId, startSeconds: startTime });
+  } else {
+    player = new YT.Player('player', {
+      height: '390',
+      width: '640',
+      videoId: videoId,
+      playerVars: {
+        start: startTime,
+        rel: 0,
+        modestbranding: 1
+      },
+      events: {
+        'onStateChange': onPlayerStateChange,
+        'onReady': onPlayerReady
       }
+    });
+  }
+  
+  // Update last watched timestamp
+  db.ref(`playlists/${currentPlaylistId}/videos/${videoId}/lastWatched`).set(firebase.database.ServerValue.TIMESTAMP);
+  lastWatchedVideoId = videoId;
+  
+  // Update URL hash
+  window.location.hash = `${currentPlaylistId}|${videoId}`;
+  
+  // Update current video index
+  currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
+  updateNavButtons();
+}
+
+function saveCurrentTime() {
+  if (!player || !videoId || isSaving) return;
+  
+  const currentTime = Math.floor(player.getCurrentTime());
+  const now = Date.now();
+  
+  // Only save if at least 5 seconds have passed since last save
+  if (now - lastUpdateTime < 5000) return;
+  
+  isSaving = true;
+  lastUpdateTime = now;
+  
+  db.ref(`playlists/${currentPlaylistId}/videos/${videoId}`).update({
+    time: currentTime,
+    lastWatched: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    console.log("Time saved:", currentTime);
+    isSaving = false;
+    updateProgressBarForVideo(videoId, currentTime);
+  }).catch(error => {
+    console.error("Error saving time:", error);
+    isSaving = false;
+  });
+}
+
+function onPlayerReady(event) {
+  // Set up periodic saving (every 5 seconds)
+  setInterval(saveCurrentTime, 5000);
+  
+  // Update current video's duration if not set
+  if (player && player.getDuration) {
+    const duration = player.getDuration();
+    if (duration > 0) {
+      db.ref(`playlists/${currentPlaylistId}/videos/${videoId}`).update({
+        duration: formatTime(duration),
+        durationSec: duration
+      });
+    }
+  }
+}
+
+function onPlayerStateChange(event) {
+  if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
+    saveCurrentTime();
+  }
+  
+  if (event.data === YT.PlayerState.PLAYING) {
+    highlightCurrentVideo();
+  }
+}
+
+function setupRealtimeListener() {
+  // Load last played playlist first
+  db.ref(LAST_PLAYED_PLAYLIST_KEY).once('value').then(snapshot => {
+    if (snapshot.exists()) {
+      currentPlaylistId = snapshot.val();
+    }
+    
+    // Then load playlists
+    db.ref("playlists").on("value", (snapshot) => {
+      if (snapshot.exists()) {
+        playlists = snapshot.val();
+        renderPlaylistSelector();
+        
+        // If current playlist doesn't exist, fall back to default
+        if (!playlists[currentPlaylistId]) {
+          currentPlaylistId = 'default';
+          if (!playlists[currentPlaylistId]) {
+            // Create default playlist if it doesn't exist
+            db.ref("playlists/default").set({
+              name: "Default Playlist",
+              createdAt: firebase.database.ServerValue.TIMESTAMP
+            });
+            return;
+          }
+        }
+        
+        // Update current playlist name display
+        currentPlaylistName.textContent = playlists[currentPlaylistId].name || "Default Playlist";
+        
+        // Then load videos for current playlist
+        loadVideosForCurrentPlaylist();
+      } else {
+        // Create default playlist if none exist
+        db.ref("playlists/default").set({
+          name: "Default Playlist",
+          createdAt: firebase.database.ServerValue.TIMESTAMP
+        });
+      }
+    });
+  });
+}
+
+function loadVideosForCurrentPlaylist() {
+  db.ref(`playlists/${currentPlaylistId}/videos`).orderByChild("addedAt").on("value", (snapshot) => {
+    const list = document.getElementById("videoList");
+    
+    if (!snapshot.exists()) {
+      if (list.querySelector('.empty-state') === null) {
+        list.innerHTML = `
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-music"></i>
+            </div>
+            <div class="empty-title">Your playlist is empty</div>
+            <div class="empty-text">Add YouTube videos to create your personalized playlist and start watching</div>
+            <button class="empty-button" onclick="document.getElementById('videoLink').focus()">
+              <i class="fas fa-plus"></i> Add First Video
+            </button>
+          </div>
+        `;
+      }
+      document.getElementById("playlistCount").textContent = "0 videos";
+      playlistVideos = [];
+      currentVideoIndex = -1;
+      updateNavButtons();
+      return;
     }
 
-    function saveAndLoadVideo() {
-      const link = document.getElementById("videoLink").value.trim();
-      videoId = getVideoId(link);
+    const newPlaylistVideos = [];
+    let mostRecentVideo = null;
+    let mostRecentTime = 0;
 
-      if (!videoId) {
-        alert("Please enter a valid YouTube link.");
-        return;
+    snapshot.forEach(child => {
+      const vid = child.key;
+      const data = child.val();
+      const duration = data.duration || "0:00";
+      
+      newPlaylistVideos.push({
+        id: vid,
+        data: data,
+        duration: duration
+      });
+
+      // Track the most recently watched video
+      if (data.lastWatched && data.lastWatched > mostRecentTime) {
+        mostRecentTime = data.lastWatched;
+        mostRecentVideo = vid;
       }
+    });
 
-      const videoRef = db.ref("videos/" + videoId);
-      videoRef.set({
-        url: link,
-        time: 0,
-        addedAt: firebase.database.ServerValue.TIMESTAMP,
-        lastWatched: firebase.database.ServerValue.TIMESTAMP,
-        duration: "0:00",
-        durationSec: 1
-      }).then(() => {
-        document.getElementById("videoLink").value = "";
+    // Update playlist count
+    document.getElementById("playlistCount").textContent = `${newPlaylistVideos.length} ${newPlaylistVideos.length === 1 ? 'video' : 'videos'}`;
+
+    // Only re-render if the playlist has changed
+    if (JSON.stringify(playlistVideos.map(v => v.id)) !== JSON.stringify(newPlaylistVideos.map(v => v.id))) {
+      list.innerHTML = "";
+      newPlaylistVideos.forEach((video, index) => {
+        const item = document.createElement("div");
+        item.className = "playlist-item";
+        if (video.id === videoId) {
+          item.classList.add("active");
+          currentPlayingItem = item;
+        }
+        item.setAttribute("data-video-id", video.id);
+        item.onclick = () => loadSavedVideo(video.id);
+        
+        item.innerHTML = `
+          <div class="thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)" data-duration="${video.duration}"></div>
+          <div class="video-info">
+            <div class="video-title">${video.data.title || "Untitled Video"}</div>
+            <div class="video-channel">${video.data.channel || "Unknown channel"}</div>
+            <div class="progress-container">
+              <div class="progress-info">
+                <span>${formatTime(video.data.time || 0)}</span>
+                <span>${video.duration}</span>
+              </div>
+              <div class="progress-bar">
+                <div class="progress" style="width: ${calculateProgress(video.data.time || 0, video.data.durationSec || 1)}%"></div>
+              </div>
+            </div>
+          </div>
+        `;
+        
+        list.appendChild(item);
+      });
+    } else {
+      // Just update progress bars for existing items
+      newPlaylistVideos.forEach(video => {
+        updateProgressBarForVideo(video.id, video.data.time || 0);
       });
     }
 
-    function loadPlayer(videoId, startTime) {
-      if (player) {
-        player.loadVideoById({ videoId: videoId, startSeconds: startTime });
-      } else {
-        player = new YT.Player('player', {
-          height: '390',
-          width: '640',
-          videoId: videoId,
-          playerVars: {
-            start: startTime,
-            rel: 0,
-            modestbranding: 1
-          },
-          events: {
-            'onStateChange': onPlayerStateChange,
-            'onReady': onPlayerReady
-          }
-        });
-      }
-      
-      // Update last watched timestamp
-      db.ref("videos/" + videoId + "/lastWatched").set(firebase.database.ServerValue.TIMESTAMP);
-      lastWatchedVideoId = videoId;
-      
-      // Update URL hash
-      window.location.hash = videoId;
-      
-      // Update current video index
+    playlistVideos = newPlaylistVideos;
+
+    // Auto-play the most recently watched video if available and no hash in URL
+    if (mostRecentVideo && !videoId && !window.location.hash) {
+      loadSavedVideo(mostRecentVideo);
+    }
+    
+    // Update current video index if we have a videoId but no index
+    if (videoId && currentVideoIndex === -1) {
       currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
       updateNavButtons();
     }
+  });
+}
 
-    function saveCurrentTime() {
-      if (!player || !videoId || isSaving) return;
-      
-      const currentTime = Math.floor(player.getCurrentTime());
-      const now = Date.now();
-      
-      // Only save if at least 5 seconds have passed since last save
-      if (now - lastUpdateTime < 5000) return;
-      
-      isSaving = true;
-      lastUpdateTime = now;
-      
-      db.ref("videos/" + videoId).update({
-        time: currentTime,
-        lastWatched: firebase.database.ServerValue.TIMESTAMP
-      }).then(() => {
-        console.log("Time saved:", currentTime);
-        isSaving = false;
-        updateProgressBarForVideo(videoId, currentTime);
-      }).catch(error => {
-        console.error("Error saving time:", error);
-        isSaving = false;
-      });
-    }
-
-    function onPlayerReady(event) {
-      // Set up periodic saving (every 5 seconds)
-      setInterval(saveCurrentTime, 5000);
-      
-      // Update current video's duration if not set
-      if (player && player.getDuration) {
-        const duration = player.getDuration();
-        if (duration > 0) {
-          db.ref("videos/" + videoId).update({
-            duration: formatTime(duration),
-            durationSec: duration
-          });
-        }
-      }
-    }
-
-    function onPlayerStateChange(event) {
-      if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-        saveCurrentTime();
+function renderPlaylistSelector() {
+  playlistSelector.innerHTML = '';
+  
+  Object.keys(playlists).forEach(playlistId => {
+    const playlist = playlists[playlistId];
+    const playlistItem = document.createElement('div');
+    playlistItem.className = `playlist-option ${playlistId === currentPlaylistId ? 'active' : ''}`;
+    playlistItem.innerHTML = `
+      <div class="playlist-option-name">${playlist.name || 'Unnamed Playlist'}</div>
+      <div class="playlist-option-count">${playlist.videos ? Object.keys(playlist.videos).length : 0}</div>
+    `;
+    
+    playlistItem.addEventListener('click', () => {
+      // Show videos for this playlist
+      const videosContainer = playlistItem.querySelector('.playlist-videos');
+      if (videosContainer) {
+        videosContainer.classList.toggle('active');
+        return;
       }
       
-      if (event.data === YT.PlayerState.PLAYING) {
-        highlightCurrentVideo();
-      }
-    }
-
-    function setupRealtimeListener() {
-      db.ref("videos").orderByChild("addedAt").on("value", (snapshot) => {
-        const list = document.getElementById("videoList");
-        
-        if (!snapshot.exists()) {
-          if (list.querySelector('.empty-state') === null) {
-            list.innerHTML = `
-              <div class="empty-state">
-                <div class="empty-icon">
-                  <i class="fas fa-music"></i>
-                </div>
-                <div class="empty-title">Your playlist is empty</div>
-                <div class="empty-text">Add YouTube videos to create your personalized playlist and start watching</div>
-                <button class="empty-button" onclick="document.getElementById('videoLink').focus()">
-                  <i class="fas fa-plus"></i> Add First Video
-                </button>
-              </div>
-            `;
-          }
-          document.getElementById("playlistCount").textContent = "0 videos";
-          playlistVideos = [];
-          currentVideoIndex = -1;
-          updateNavButtons();
-          return;
-        }
-
-        const newPlaylistVideos = [];
-        let mostRecentVideo = null;
-        let mostRecentTime = 0;
-
-        snapshot.forEach(child => {
-          const vid = child.key;
-          const data = child.val();
-          const duration = data.duration || "0:00";
-          
-          newPlaylistVideos.push({
-            id: vid,
-            data: data,
-            duration: duration
-          });
-
-          // Track the most recently watched video
-          if (data.lastWatched && data.lastWatched > mostRecentTime) {
-            mostRecentTime = data.lastWatched;
-            mostRecentVideo = vid;
-          }
-        });
-
-        // Update playlist count
-        document.getElementById("playlistCount").textContent = `${newPlaylistVideos.length} ${newPlaylistVideos.length === 1 ? 'video' : 'videos'}`;
-
-        // Only re-render if the playlist has changed
-        if (JSON.stringify(playlistVideos.map(v => v.id)) !== JSON.stringify(newPlaylistVideos.map(v => v.id))) {
-          list.innerHTML = "";
-          newPlaylistVideos.forEach((video, index) => {
-            const item = document.createElement("div");
-            item.className = "playlist-item";
-            if (video.id === videoId) {
-              item.classList.add("active");
-              currentPlayingItem = item;
-            }
-            item.setAttribute("data-video-id", video.id);
-            item.onclick = () => loadSavedVideo(video.id);
-            
-            item.innerHTML = `
-              <div class="thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)" data-duration="${video.duration}"></div>
-              <div class="video-info">
-                <div class="video-title">${video.data.title || "Untitled Video"}</div>
-                <div class="video-channel">${video.data.channel || "Unknown channel"}</div>
-                <div class="progress-container">
-                  <div class="progress-info">
-                    <span>${formatTime(video.data.time || 0)}</span>
-                    <span>${video.duration}</span>
-                  </div>
-                  <div class="progress-bar">
-                    <div class="progress" style="width: ${calculateProgress(video.data.time || 0, video.data.durationSec || 1)}%"></div>
-                  </div>
-                </div>
-              </div>
-            `;
-            
-            list.appendChild(item);
-          });
-        } else {
-          // Just update progress bars for existing items
-          newPlaylistVideos.forEach(video => {
-            updateProgressBarForVideo(video.id, video.data.time || 0);
-          });
-        }
-
-        playlistVideos = newPlaylistVideos;
-
-        // Auto-play the most recently watched video if available and no hash in URL
-        if (mostRecentVideo && !videoId && !window.location.hash) {
-          loadSavedVideo(mostRecentVideo);
-        }
-        
-        // Update current video index if we have a videoId but no index
-        if (videoId && currentVideoIndex === -1) {
-          currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
-          updateNavButtons();
-        }
-      });
-    }
-
-    function calculateProgress(currentTime, duration) {
-      if (duration <= 0) return 0;
-      const progress = (currentTime / duration) * 100;
-      return Math.min(100, Math.max(0, progress)); // Ensure between 0-100
-    }
-
-    function formatTime(seconds) {
-      const mins = Math.floor(seconds / 60);
-      const secs = Math.floor(seconds % 60);
-      return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
-    }
-
-    function loadSavedVideo(vid) {
-      videoId = vid;
-      db.ref("videos/" + vid).once("value").then(snapshot => {
-        const video = snapshot.val();
-        const startTime = video.time || 0;
-        loadPlayer(videoId, startTime);
-        highlightCurrentVideo();
-      });
-    }
-
-    function playNextVideo() {
-      if (currentVideoIndex < playlistVideos.length - 1) {
-        const nextVideo = playlistVideos[currentVideoIndex + 1];
-        loadSavedVideo(nextVideo.id);
-      }
-    }
-
-    function playPreviousVideo() {
-      if (currentVideoIndex > 0) {
-        const prevVideo = playlistVideos[currentVideoIndex - 1];
-        loadSavedVideo(prevVideo.id);
-      }
-    }
-
-    function updateNavButtons() {
-      const prevBtn = document.getElementById("prevBtn");
-      const nextBtn = document.getElementById("nextBtn");
-      
-      prevBtn.disabled = currentVideoIndex <= 0;
-      nextBtn.disabled = currentVideoIndex >= playlistVideos.length - 1 || currentVideoIndex === -1;
-    }
-
-    function highlightCurrentVideo() {
-      if (currentPlayingItem) {
-        currentPlayingItem.classList.remove("active");
-      }
-      
-      const items = document.querySelectorAll(".playlist-item");
-      items.forEach(item => {
-        if (item.getAttribute("data-video-id") === videoId) {
-          item.classList.add("active");
-          currentPlayingItem = item;
-          // Scroll to the item if it's not in view
-          //item.scrollIntoView({ behavior: "smooth", block: "nearest" });
-        }
-      });
-    }
-
-    function updateProgressBarForVideo(vid, currentTime) {
-      const item = document.querySelector(`.playlist-item[data-video-id="${vid}"]`);
-      if (!item) return;
-      
-      const progressBar = item.querySelector('.progress');
-      const timeDisplay = item.querySelector('.progress-info span:first-child');
-      const durationDisplay = item.querySelector('.progress-info span:last-child');
-      
-      if (progressBar && timeDisplay) {
-        // Get duration from data attribute or calculate
-        let duration = 1;
-        const videoData = playlistVideos.find(v => v.id === vid);
-        if (videoData && videoData.data.durationSec) {
-          duration = videoData.data.durationSec;
-        }
-        
-        const percentage = calculateProgress(currentTime, duration);
-        progressBar.style.width = `${percentage}%`;
-        timeDisplay.textContent = formatTime(currentTime);
-      }
-    }
-
-    // Save time when page is about to unload
-    window.addEventListener('beforeunload', function(e) {
-      saveCurrentTime();
+      // Switch to this playlist
+      switchToPlaylist(playlistId);
     });
+    
+    // Add right-click menu for viewing videos
+    playlistItem.addEventListener('contextmenu', (e) => {
+      e.preventDefault();
+      showPlaylistVideos(playlistId, playlistItem);
+    });
+    
+    playlistSelector.appendChild(playlistItem);
+  });
+}
 
-    // Load video list on page load
-    window.onload = function() {
-      setupRealtimeListener();
-      
-      // Check if there's a video ID in URL hash
-      const hashVideoId = window.location.hash.substring(1);
-      if (hashVideoId) {
-        loadSavedVideo(hashVideoId);
-      }
-      
-      // Add event listener for Enter key in input field
-      document.getElementById("videoLink").addEventListener("keypress", function(e) {
-        if (e.key === "Enter") {
-          saveAndLoadVideo();
-        }
-      });
-    };
-  </script>
-</body>
+function showPlaylistVideos(playlistId, playlistElement) {
+  // Remove any existing videos container
+  const existingContainer = playlistElement.querySelector('.playlist-videos');
+  if (existingContainer) {
+    existingContainer.remove();
+    return;
+  }
+  
+  // Create new videos container
+  const videosContainer = document.createElement('div');
+  videosContainer.className = 'playlist-videos active';
+  
+  if (playlists[playlistId].videos) {
+    Object.entries(playlists[playlistId].videos).forEach(([videoId, videoData]) => {
+      const videoItem = document.createElement('div');
+      videoItem.className = 'playlist-video-item';
+      videoItem.innerHTML = `
+        <div class="playlist-video-thumb" style="background-image: url(https://img.youtube.com/vi/${videoId}/mqdefault.jpg)"></div>
+        <div class="playlist-video-info">
+          <div class="playlist-video-title">${videoData.title || 'Untitled Video'}</div>
+          <div class="playlist-video-duration">${videoData.duration || '0:00'}</div>
+        </div>
+      `;
+      videosContainer.appendChild(videoItem);
+    });
+  } else {
+    videosContainer.innerHTML = '<div style="padding: 10px; color: var(--gray-1);">No videos in this playlist</div>';
+  }
+  
+  playlistElement.appendChild(videosContainer);
+}
+
+function switchToPlaylist(playlistId) {
+  currentPlaylistId = playlistId;
+  currentPlaylistName.textContent = playlists[playlistId].name || "Default Playlist";
+  
+  // Save the last played playlist to Firebase
+  db.ref(LAST_PLAYED_PLAYLIST_KEY).set(playlistId);
+  
+  // Close admin panel
+  adminPanel.classList.remove('active');
+  overlay.classList.remove('active');
+  
+  // Load videos for new playlist
+  loadVideosForCurrentPlaylist();
+  
+  // Reset player
+  videoId = '';
+  if (player) {
+    player.stopVideo();
+  }
+  
+  // Check URL hash for playlist-specific video
+  const hashParts = window.location.hash.substring(1).split('|');
+  if (hashParts.length === 2 && hashParts[0] === currentPlaylistId) {
+    loadSavedVideo(hashParts[1]);
+  }
+}
+
+function createNewPlaylist() {
+  const playlistName = document.getElementById('newPlaylistName').value.trim();
+  if (!playlistName) {
+    alert('Please enter a playlist name');
+    return;
+  }
+  
+  const newPlaylistId = generateId();
+  
+  // Create the playlist without any videos initially
+  db.ref(`playlists/${newPlaylistId}`).set({
+    name: playlistName,
+    createdAt: firebase.database.ServerValue.TIMESTAMP,
+    videos: {} // Explicitly set empty videos object
+  }).then(() => {
+    document.getElementById('newPlaylistName').value = '';
+    
+    // Switch to the new playlist
+    switchToPlaylist(newPlaylistId);
+  }).catch(error => {
+    console.error("Error creating playlist:", error);
+    alert("Error creating playlist. Please try again.");
+  });
+}
+
+function generateId() {
+  return 'xxxxxxxx'.replace(/[xy]/g, function(c) {
+    const r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+    return v.toString(16);
+  });
+}
+
+function calculateProgress(currentTime, duration) {
+  if (duration <= 0) return 0;
+  const progress = (currentTime / duration) * 100;
+  return Math.min(100, Math.max(0, progress)); // Ensure between 0-100
+}
+
+function formatTime(seconds) {
+  const mins = Math.floor(seconds / 60);
+  const secs = Math.floor(seconds % 60);
+  return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+}
+
+function loadSavedVideo(vid) {
+  videoId = vid;
+  db.ref(`playlists/${currentPlaylistId}/videos/${vid}`).once("value").then(snapshot => {
+    const video = snapshot.val();
+    const startTime = video.time || 0;
+    loadPlayer(videoId, startTime);
+    highlightCurrentVideo();
+  });
+}
+
+function playNextVideo() {
+  if (currentVideoIndex < playlistVideos.length - 1) {
+    const nextVideo = playlistVideos[currentVideoIndex + 1];
+    loadSavedVideo(nextVideo.id);
+  }
+}
+
+function playPreviousVideo() {
+  if (currentVideoIndex > 0) {
+    const prevVideo = playlistVideos[currentVideoIndex - 1];
+    loadSavedVideo(prevVideo.id);
+  }
+}
+
+function updateNavButtons() {
+  const prevBtn = document.getElementById("prevBtn");
+  const nextBtn = document.getElementById("nextBtn");
+  
+  prevBtn.disabled = currentVideoIndex <= 0;
+  nextBtn.disabled = currentVideoIndex >= playlistVideos.length - 1 || currentVideoIndex === -1;
+}
+
+function highlightCurrentVideo() {
+  if (currentPlayingItem) {
+    currentPlayingItem.classList.remove("active");
+  }
+  
+  const items = document.querySelectorAll(".playlist-item");
+  items.forEach(item => {
+    if (item.getAttribute("data-video-id") === videoId) {
+      item.classList.add("active");
+      currentPlayingItem = item;
+    }
+  });
+}
+
+function updateProgressBarForVideo(vid, currentTime) {
+  const item = document.querySelector(`.playlist-item[data-video-id="${vid}"]`);
+  if (!item) return;
+  
+  const progressBar = item.querySelector('.progress');
+  const timeDisplay = item.querySelector('.progress-info span:first-child');
+  const durationDisplay = item.querySelector('.progress-info span:last-child');
+  
+  if (progressBar && timeDisplay) {
+    let duration = 1;
+    const videoData = playlistVideos.find(v => v.id === vid);
+    if (videoData && videoData.data.durationSec) {
+      duration = videoData.data.durationSec;
+    }
+    
+    const percentage = calculateProgress(currentTime, duration);
+    progressBar.style.width = `${percentage}%`;
+    timeDisplay.textContent = formatTime(currentTime);
+  }
+}
+
+// Save time when page is about to unload
+window.addEventListener('beforeunload', function(e) {
+  saveCurrentTime();
+});
+
+// Load video list on page load
+window.onload = function() {
+  setupRealtimeListener();
+  
+  // Check if there's a playlist and video ID in URL hash
+  const hashParts = window.location.hash.substring(1).split('|');
+  if (hashParts.length === 2) {
+    currentPlaylistId = hashParts[0];
+    loadSavedVideo(hashParts[1]);
+  }
+  
+  // Add event listener for Enter key in input field
+  document.getElementById("videoLink").addEventListener("keypress", function(e) {
+    if (e.key === "Enter") {
+      saveAndLoadVideo();
+    }
+  });
+};
+ </script>
+ </body>
 </html>
+   
+
