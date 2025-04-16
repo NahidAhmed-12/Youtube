@@ -9,316 +9,811 @@
   <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@300;400;500;700&display=swap" rel="stylesheet">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
   <style>
-    :root {
-      --primary-color: #ff0000;
-      --primary-dark: #cc0000;
-      --success-color: #4caf50;
-      --success-dark: #3d8b40;
-      --danger-color: #d32f2f;
-      --danger-dark: #b71c1c;
-      --dark-1: #0f0f0f;
-      --dark-2: #181818;
-      --dark-3: #212121;
-      --dark-4: #3d3d3d;
-      --light-1: #ffffff;
-      --light-2: #f1f1f1;
-      --light-3: #e5e5e5;
-      --light-4: #cccccc;
-      --text-primary: #f1f1f1;
-      --text-secondary: #aaaaaa;
-      --text-dark: #030303;
-      --shadow-color: rgba(0, 0, 0, 0.3);
-    }
-    
-    * {
-      box-sizing: border-box;
-      margin: 0;
-      padding: 0;
-    }
-    
-    body {
-      font-family: 'Roboto', sans-serif;
-      background-color: var(--dark-1);
-      color: var(--text-primary);
-      line-height: 1.6;
-    }
-    
-    .container {
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-    }
-    
-    /* Header Styles */
-    .header {
-      display: flex;
-      justify-content: space-between;
-      align-items: center;
-      padding: 16px 0;
-      margin-bottom: 24px;
-      border-bottom: 1px solid var(--dark-3);
-    }
-    
-    .logo {
-      display: flex;
-      align-items: center;
-    }
-    
-    .logo-icon {
-      color: var(--primary-color);
-      font-size: 2rem;
-      margin-right: 10px;
-    }
-    
-    .logo-text {
-      font-size: 1.5rem;
-      font-weight: 500;
-    }
-    
-    .admin-actions {
-      display: flex;
-      gap: 12px;
-    }
-    
-    .btn {
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 0.9rem;
-      font-weight: 500;
-      display: flex;
-      align-items: center;
-      gap: 6px;
-      transition: background-color 0.2s;
-    }
-    
-    .btn-primary {
-      background-color: var(--primary-color);
-      color: white;
-    }
-    
-    .btn-primary:hover {
-      background-color: var(--primary-dark);
-    }
-    
-    .btn-success {
-      background-color: var(--success-color);
-      color: white;
-    }
-    
-    .btn-success:hover {
-      background-color: var(--success-dark);
-    }
-    
-    .btn-danger {
-      background-color: var(--danger-color);
-      color: white;
-    }
-    
-    .btn-danger:hover {
-      background-color: var(--danger-dark);
-    }
-    
-    /* Add Video Form */
-    .add-video-form {
-      background-color: var(--dark-3);
-      padding: 20px;
-      border-radius: 8px;
-      margin-bottom: 24px;
-      box-shadow: 0 2px 4px var(--shadow-color);
-    }
-    
-    .form-title {
-      font-size: 1.2rem;
-      margin-bottom: 16px;
-      color: var(--text-primary);
-    }
-    
-    .form-group {
-      margin-bottom: 16px;
-    }
-    
-    .form-label {
-      display: block;
-      margin-bottom: 8px;
-      color: var(--text-primary);
-    }
-    
-    .form-input {
-      width: 100%;
-      padding: 10px 12px;
-      border: 1px solid var(--dark-4);
-      border-radius: 4px;
-      background-color: var(--dark-2);
-      color: var(--text-primary);
-      font-size: 1rem;
-    }
-    
-    .form-input:focus {
-      outline: none;
-      border-color: var(--primary-color);
-    }
-    
-    /* Stats Container */
-    .stats-container {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-      gap: 16px;
-      margin-bottom: 24px;
-    }
-    
-    .stat-card {
-      background-color: var(--dark-3);
-      padding: 16px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px var(--shadow-color);
-    }
-    
-    .stat-title {
-      color: var(--text-secondary);
-      font-size: 0.9rem;
-      margin-bottom: 8px;
-    }
-    
-    .stat-value {
-      font-size: 1.5rem;
-      font-weight: 500;
-    }
-    
-    /* Videos Table */
-    .videos-table {
-      width: 100%;
-      border-collapse: collapse;
-      background-color: var(--dark-2);
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 2px 4px var(--shadow-color);
-    }
-    
-    .videos-table th {
-      background-color: var(--dark-3);
-      padding: 12px 16px;
-      text-align: left;
-      font-weight: 500;
-    }
-    
-    .videos-table td {
-      padding: 12px 16px;
-      border-bottom: 1px solid var(--dark-3);
-    }
-    
-    .videos-table tr:last-child td {
-      border-bottom: none;
-    }
-    
-    .videos-table tr:hover {
-      background-color: var(--dark-3);
-    }
-    
-    .video-thumbnail {
-      width: 120px;
-      height: 68px;
-      background-color: var(--dark-4);
-      background-size: cover;
-      background-position: center;
-      border-radius: 4px;
-    }
-    
-    .video-info {
-      display: flex;
-      align-items: center;
-      gap: 12px;
-    }
-    
-    .video-details {
-      flex: 1;
-    }
-    
-    .video-title {
-      font-weight: 500;
-      margin-bottom: 4px;
-      display: -webkit-box;
-      -webkit-line-clamp: 2;
-      -webkit-box-orient: vertical;
-      overflow: hidden;
-    }
-    
-    .video-url {
-      color: var(--text-secondary);
-      font-size: 0.8rem;
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    
-    .video-stats {
-      display: flex;
-      flex-direction: column;
-      gap: 4px;
-      font-size: 0.8rem;
-      color: var(--text-secondary);
-    }
-    
-    .action-buttons {
-      display: flex;
-      gap: 8px;
-    }
-    
-    /* Empty State */
-    .empty-state {
-      padding: 40px 20px;
-      text-align: center;
-      color: var(--text-secondary);
-      background-color: var(--dark-2);
-      border-radius: 8px;
-    }
-    
-    /* Responsive Styles */
-    @media (max-width: 768px) {
-      .videos-table {
-        display: block;
-        overflow-x: auto;
-      }
-      
-      .header {
-        flex-direction: column;
-        gap: 16px;
-        align-items: flex-start;
-      }
-      
-      .admin-actions {
-        width: 100%;
-        flex-direction: column;
-      }
-      
-      .btn {
-        width: 100%;
-        justify-content: center;
-      }
-    }
-    
-    @media (max-width: 480px) {
-      .video-info {
-        flex-direction: column;
-        align-items: flex-start;
-      }
-      
-      .video-thumbnail {
-        width: 100%;
-        height: 120px;
-      }
-      
-      .action-buttons {
-        width: 100%;
-        justify-content: flex-end;
-      }
-    }
+  
+  /* =================================
+   Root Variables - New Color Palette
+   ================================= */
+:root {
+  --primary-color:#A99E90 ; /* Purple */
+  --bal:#A99E90;
+  --primary-dark: #80BC15;
+  --primary-light: #a29bfe;
+  --success-color: #00b894; /* Teal */
+  --success-dark: #00997b;
+  --danger-color: #EB0507; /* Red */
+  --danger-dark: #b02b2b;
+  --warning-color: #fdcb6e; /* Yellow */
+  --info-color: #0984e3;   /* Blue */
+
+  --bg-dark-0: #1e2029;    /* Deepest background */
+  --bg-dark-1: #252732;    /* Main background */
+  --bg-dark-2: #2f3342;    /* Card/Component background */
+  --bg-dark-3: #393e4f;    /* Slightly lighter component background / Hover */
+  --bg-dark-4: #444a5d;    /* Borders / Subtle elements */
+
+  --text-primary: #f5f6fa; /* Main text */
+  --text-secondary: #b2b8c5; /* Lighter text */
+  --text-accent: var(--primary-color);
+  --text-dark: #2d3436;    /* Text on colored buttons */
+
+  --shadow-color: rgba(0, 0, 0, 0.3);
+  --shadow-light: rgba(0, 0, 0, 0.15);
+  --shadow-strong: rgba(0, 0, 0, 0.5);
+
+  --transition: all 0.3s ease;
+  --border-radius-sm: 6px;
+  --border-radius-md: 10px;
+  --border-radius-lg: 16px;
+  --card-shadow: 0 4px 12px var(--shadow-light);
+  --hover-shadow: 0 6px 16px var(--shadow-color);
+  --input-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* =================================
+   Global Styles
+   ================================= */
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  font-family: 'Roboto', sans-serif;
+  background-color: var(--bg-dark-1);
+  color: var(--text-primary);
+  line-height: 1.6;
+  min-height: 100vh;
+  font-size: 16px;
+}
+
+/* =================================
+   Container and Header
+   ================================= */
+.container {
+  max-width: 1500px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 25px;
+  margin-bottom: 35px;
+  border-bottom: 1px solid var(--bg-dark-4);
+}
+
+.logo {
+  display: flex;
+  align-items: center;
+  gap: 15px;
+}
+
+.logo-icon {
+  color: var(--bal);
+  font-size: 2.8rem;
+  filter: drop-shadow(0 0 5px var(--ball));
+}
+
+.logo-text {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+}
+
+.admin-actions {
+  display: flex;
+  gap: 15px;
+}
+
+/* =================================
+   Buttons
+   ================================= */
+.btn {
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  font-size: 1rem;
+  font-weight: 500;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  transition: var(--transition);
+  box-shadow: var(--card-shadow);
+  text-decoration: none;
+  white-space: nowrap;
+}
+
+.btn i {
+  font-size: 1.1em;
+}
+
+.btn-primary {
+  background-color: var(--primary-color);
+  color: var(--text-dark);
+}
+
+.btn-primary:hover {
+  background-color: var(--primary-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
+}
+
+.btn-success {
+  background-color: var(--success-color);
+  color: var(--text-dark);
+}
+
+.btn-success:hover {
+  background-color: var(--success-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
+}
+
+.btn-danger {
+  background-color: var(--danger-color);
+  color: var(--text-dark);
+}
+
+.btn-danger:hover {
+  background-color: var(--danger-dark);
+  transform: translateY(-2px);
+  box-shadow: var(--hover-shadow);
+}
+
+.btn-secondary {
+  background-color: var(--bg-dark-3);
+  color: var(--text-primary);
+  border: 1px solid var(--bg-dark-4);
+}
+
+.btn-secondary:hover {
+  background-color: var(--bg-dark-4);
+  border-color: var(--text-secondary);
+}
+
+.btn-sm {
+  padding: 8px 16px;
+  font-size: 0.9rem;
+  gap: 6px;
+}
+
+/* =================================
+   Forms
+   ================================= */
+.add-video-form,
+.add-playlist-form {
+  background-color: var(--bg-dark-2);
+  padding: 30px;
+  border-radius: var(--border-radius-lg);
+  margin-bottom: 35px;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--bg-dark-4);
+  display: none; /* Initially hidden */
+  animation: slideDown 0.4s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.form-title {
+  font-size: 1.6rem;
+  margin-bottom: 25px;
+  color: var(--text-primary);
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  border-bottom: 1px solid var(--bg-dark-4);
+  padding-bottom: 15px;
+}
+
+.form-title i {
+  color: var(--primary-color);
+  font-size: 1.2em;
+}
+
+.form-group {
+  margin-bottom: 25px;
+}
+
+.form-label {
+  display: block;
+  margin-bottom: 12px;
+  color: var(--text-secondary);
+  font-weight: 500;
+  font-size: 0.95rem;
+}
+
+.form-input {
+  width: 100%;
+  padding: 14px 18px;
+  border: 1px solid var(--bg-dark-4);
+  border-radius: var(--border-radius-md);
+  background-color: var(--bg-dark-3);
+  color: var(--text-primary);
+  font-size: 1rem;
+  transition: var(--transition);
+  box-shadow: var(--input-shadow);
+}
+
+.form-input::placeholder {
+  color: var(--text-secondary);
+  opacity: 0.7;
+}
+
+.form-input:focus {
+  outline: none;
+  border-color: var(--primary-color);
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.3); /* Purple focus glow */
+  background-color: var(--bg-dark-2);
+}
+
+.add-video-form .action-buttons,
+.add-playlist-form .action-buttons {
+  display: flex;
+  gap: 15px;
+  justify-content: flex-end;
+  margin-top: 10px;
+}
+
+/* =================================
+   Stats Section
+   ================================= */
+.stats-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+  gap: 25px;
+  margin-bottom: 35px;
+}
+
+.stat-card {
+  background: linear-gradient(145deg, var(--bg-dark-2), var(--bg-dark-3));
+  padding: 25px;
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--bg-dark-4);
+  transition: var(--transition);
+  position: relative;
+  overflow: hidden;
+}
+
+.stat-card::before {
+  content: '';
+  position: absolute;
+  top: -50px;
+  right: -50px;
+  width: 100px;
+  height: 100px;
+  background-color: rgba(108, 92, 231, 0.05); /* Subtle accent circle */
+  border-radius: 50%;
+  transition: var(--transition);
+}
+
+.stat-card:hover {
+  transform: translateY(-5px) scale(1.02);
+  box-shadow: var(--hover-shadow);
+  border-color: var(--primary-color);
+}
+
+.stat-card:hover::before {
+  transform: scale(1.5);
+  opacity: 0.7;
+}
+
+.stat-title {
+  color: var(--text-secondary);
+  font-size: 1rem;
+  margin-bottom: 15px;
+  font-weight: 500;
+}
+
+.stat-value {
+  font-size: 2.2rem;
+  font-weight: 700;
+  color: var(--primary-color);
+  line-height: 1.2;
+}
+
+#lastAdded {
+  font-size: 1.2rem; /* Smaller font for date/time */
+  color: var(--text-primary);
+}
+
+/* =================================
+   Playlist Selector
+   ================================= */
+.playlist-selector {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  margin-bottom: 30px;
+  padding: 20px;
+  background-color: var(--bg-dark-2);
+  border-radius: var(--border-radius-lg);
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--bg-dark-4);
+}
+
+.playlist-selector > span {
+  font-weight: 500;
+  color: var(--text-secondary);
+}
+
+.playlist-dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.playlist-dropdown-btn {
+  background-color: var(--bg-dark-3);
+  color: var(--text-primary);
+  padding: 12px 22px;
+  border: 1px solid var(--bg-dark-4);
+  border-radius: var(--border-radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  font-weight: 500;
+  transition: var(--transition);
+  box-shadow: var(--input-shadow);
+  min-width: 200px;
+  justify-content: space-between;
+}
+
+.playlist-dropdown-btn:hover {
+  background-color: var(--bg-dark-4);
+  border-color: var(--primary-color);
+}
+
+.playlist-dropdown-content {
+  display: none;
+  position: absolute;
+  background-color: var(--bg-dark-3);
+  min-width: 250px;
+  box-shadow: var(--hover-shadow);
+  z-index: 10;
+  border-radius: var(--border-radius-md);
+  overflow: hidden;
+  border: 1px solid var(--bg-dark-4);
+  margin-top: 8px;
+  max-height: 350px;
+  overflow-y: auto;
+}
+
+.playlist-dropdown-content a {
+  color: var(--text-primary);
+  padding: 14px 22px;
+  text-decoration: none;
+  display: block;
+  border-bottom: 1px solid var(--bg-dark-4);
+  transition: var(--transition);
+  font-size: 0.95rem;
+}
+
+.playlist-dropdown-content a:last-child {
+  border-bottom: none;
+}
+
+.playlist-dropdown-content a:hover {
+  background-color: var(--bg-dark-4);
+  color: var(--primary-color);
+  padding-left: 26px; /* Slight indent on hover */
+}
+
+.playlist-dropdown:hover .playlist-dropdown-content {
+  display: block;
+  animation: fadeIn 0.2s ease-out;
+}
+
+.current-playlist {
+  font-weight: 600;
+  color: var(--primary-color);
+}
+
+/* =================================
+   Videos Table
+   ================================= */
+.videos-table {
+  width: 100%;
+  border-collapse: separate;
+  border-spacing: 0;
+  background-color: var(--bg-dark-2);
+  border-radius: var(--border-radius-lg);
+  overflow: hidden;
+  box-shadow: var(--card-shadow);
+  border: 1px solid var(--bg-dark-4);
+}
+
+.videos-table th {
+  background-color: var(--bg-dark-3);
+  padding: 18px 25px;
+  text-align: left;
+  font-weight: 600;
+  color: var(--primary-color);
+  border-bottom: 1px solid var(--bg-dark-4);
+  font-size: 1rem;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.videos-table td {
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--bg-dark-4);
+  vertical-align: middle;
+}
+
+.videos-table tr:last-child td {
+  border-bottom: none;
+}
+
+.videos-table tbody tr {
+  transition: background-color 0.2s ease;
+}
+
+.videos-table tbody tr:hover {
+  background-color: var(--bg-dark-3);
+}
+
+.video-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+}
+
+.video-thumbnail {
+  width: 160px;
+  height: 90px;
+  background-color: var(--bg-dark-4);
+  background-size: cover;
+  background-position: center;
+  border-radius: var(--border-radius-md);
+  transition: var(--transition);
+  box-shadow: var(--input-shadow);
+  flex-shrink: 0;
+}
+
+.video-thumbnail:hover {
+  transform: scale(1.05);
+  box-shadow: 0 4px 10px var(--shadow-color);
+}
+
+.video-details {
+  flex: 1;
+  min-width: 0;
+}
+
+.video-title {
+  font-weight: 500;
+  margin-bottom: 8px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+  font-size: 1.1rem;
+  line-height: 1.4;
+  color: var(--text-primary);
+}
+
+.video-url {
+  color: var(--text-secondary);
+  font-size: 0.85rem;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  margin-bottom: 10px;
+  display: block;
+}
+
+.video-stats {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  font-size: 0.9rem;
+  color: var(--text-secondary);
+}
+
+.video-stats div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.video-stats i {
+  width: 18px;
+  text-align: center;
+  color: var(--primary-color);
+  opacity: 0.8;
+}
+
+.action-buttons {
+  display: flex;
+  gap: 12px;
+  align-items: center;
+}
+
+/* =================================
+   Empty State
+   ================================= */
+.empty-state {
+  padding: 80px 30px;
+  text-align: center;
+  color: var(--text-secondary);
+  background-color: transparent;
+  border-radius: var(--border-radius-lg);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 20px;
+  min-height: 300px;
+}
+
+.empty-state i {
+  font-size: 4rem;
+  color: var(--primary-color);
+  opacity: 0.5;
+}
+
+.empty-state p {
+  max-width: 550px;
+  margin: 0 auto;
+  line-height: 1.7;
+  font-size: 1.1rem;
+}
+
+/* =================================
+   Confirmation Modal
+   ================================= */
+.confirmation-modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(10, 10, 10, 0.8);
+  z-index: 1000;
+  justify-content: center;
+  align-items: center;
+  backdrop-filter: blur(8px);
+  animation: fadeIn 0.3s ease-out;
+  padding: 20px;
+}
+
+.confirmation-box {
+  background-color: var(--bg-dark-2);
+  padding: 35px;
+  border-radius: var(--border-radius-lg);
+  width: 90%;
+  max-width: 550px;
+  box-shadow: 0 15px 35px var(--shadow-strong);
+  border: 1px solid var(--danger-color);
+  animation: scaleUp 0.3s ease-out;
+}
+
+@keyframes scaleUp {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.confirmation-message {
+  margin-bottom: 25px;
+  font-size: 1.2rem;
+  line-height: 1.6;
+  color: var(--text-primary);
+}
+
+.confirmation-input {
+  width: 100%;
+  padding: 14px 18px;
+  margin-bottom: 30px;
+  background-color: var(--bg-dark-3);
+  border: 1px solid var(--danger-dark);
+  color: var(--text-primary);
+  border-radius: var(--border-radius-md);
+  font-size: 1rem;
+  box-shadow: var(--input-shadow);
+}
+
+.confirmation-input:focus {
+  outline: none;
+  border-color: var(--danger-color);
+  box-shadow: 0 0 0 3px rgba(214, 48, 49, 0.3); /* Red focus glow */
+}
+
+.confirmation-buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 15px;
+}
+
+/* =================================
+   Scrollbar Styling
+   ================================= */
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--bg-dark-1);
+  border-radius: 5px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: var(--bg-dark-4);
+  border-radius: 5px;
+  border: 2px solid var(--bg-dark-1);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: var(--primary-color);
+}
+
+/* =================================
+   Responsive Styles
+   ================================= */
+@media (max-width: 1200px) {
+  .container {
+    padding: 25px;
+  }
+  .video-thumbnail {
+    width: 140px;
+    height: 79px;
+  }
+}
+
+@media (max-width: 992px) {
+  .stats-container {
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+  }
+  .video-info {
+    flex-direction: column;
+    align-items: flex-start;
+    gap: 15px;
+  }
+  .video-thumbnail {
+    width: 100%;
+    height: 0;
+    padding-bottom: 56.25%;
+  }
+  .videos-table th:nth-child(2),
+  .videos-table td:nth-child(2) {
+  }
+  .videos-table th, .videos-table td {
+    padding: 15px 20px;
+  }
+}
+
+@media (max-width: 768px) {
+  body {
+    font-size: 15px;
+  }
+  .header {
+    flex-direction: column;
+    gap: 25px;
+    align-items: flex-start;
+  }
+  .admin-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 12px;
+  }
+  .admin-actions .btn {
+    flex-grow: 1;
+    min-width: 150px;
+  }
+  .playlist-selector {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 15px;
+  }
+  .playlist-dropdown-btn {
+    width: 100%;
+  }
+  .playlist-dropdown-content {
+    width: 100%;
+    min-width: unset;
+    position: static;
+    box-shadow: none;
+    border: none;
+    border-top: 1px solid var(--bg-dark-4);
+    margin-top: 15px;
+    max-height: 250px;
+  }
+  .playlist-dropdown:hover .playlist-dropdown-content {
+    display: block;
+  }
+  .videos-table {
+    display: block;
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+  }
+  .videos-table th, .videos-table td {
+    white-space: normal;
+  }
+  .videos-table td:first-child {
+    min-width: 300px;
+  }
+  .videos-table td:last-child {
+    min-width: 150px;
+  }
+  .action-buttons {
+    justify-content: flex-start;
+    width: auto;
+  }
+  .confirmation-box {
+    padding: 25px;
+  }
+}
+
+@media (max-width: 480px) {
+  .container {
+    padding: 15px;
+  }
+  .logo-text {
+    font-size: 1.6rem;
+  }
+  .logo-icon {
+    font-size: 2.2rem;
+  }
+  .btn {
+    padding: 10px 18px;
+    font-size: 0.95rem;
+  }
+  .admin-actions .btn {
+    min-width: 120px;
+  }
+  .stats-container {
+    grid-template-columns: 1fr;
+    gap: 20px;
+  }
+  .stat-card {
+    padding: 20px;
+  }
+  .stat-value {
+    font-size: 1.8rem;
+  }
+  .add-video-form,
+  .add-playlist-form {
+    padding: 20px;
+  }
+  .form-title {
+    font-size: 1.4rem;
+  }
+  .videos-table th,
+  .videos-table td {
+    padding: 12px 15px;
+  }
+  .video-title {
+    font-size: 1rem;
+  }
+  .confirmation-buttons {
+    flex-direction: column;
+    gap: 12px;
+  }
+  .confirmation-buttons .btn {
+    width: 100%;
+  }
+}
+
   </style>
 </head>
 <body>
   <div class="container">
-    <!-- Header -->
     <header class="header">
       <div class="logo">
         <i class="fab fa-youtube logo-icon"></i>
@@ -326,19 +821,22 @@
       </div>
       
       <div class="admin-actions">
-        <button class="btn btn-primary" onclick="showAddForm()">
+        <button style="color: white ;" class="btn btn-primary" onclick="showAddPlaylistForm()">
           <i class="fas fa-plus"></i>
-          <span>Add Video</span>
+          <span>New Playlist</span>
         </button>
-        <button class="btn btn-danger" onclick="confirmDeleteAll()">
+        <button style="color: white ;" class="btn btn-primary" onclick="showAddForm()">
+          <i class="fas fa-plus"></i>
+          <span >Add Video</span>
+        </button>
+        <button style="color: white ;" class="btn btn-danger" onclick="confirmDeleteAll()">
           <i class="fas fa-trash-alt"></i>
           <span>Delete All</span>
         </button>
       </div>
     </header>
     
-    <!-- Add Video Form (Initially hidden) -->
-    <div class="add-video-form" id="addVideoForm" style="display: none;">
+    <div class="add-video-form" id="addVideoForm">
       <h3 class="form-title">Add New Video</h3>
       <div class="form-group">
         <label for="videoUrl" class="form-label">YouTube Video URL</label>
@@ -360,8 +858,41 @@
       </div>
     </div>
     
-    <!-- Main Content -->
+    <div class="add-playlist-form" id="addPlaylistForm">
+      <h3 class="form-title">Create New Playlist</h3>
+      <div class="form-group">
+        <label for="playlistName" class="form-label">Playlist Name</label>
+        <input type="text" id="playlistName" class="form-input" placeholder="Enter playlist name">
+      </div>
+      <div class="form-group">
+        <label for="playlistDescription" class="form-label">Description (Optional)</label>
+        <input type="text" id="playlistDescription" class="form-input" placeholder="Enter playlist description">
+      </div>
+      <div class="action-buttons">
+        <button class="btn btn-success" onclick="addPlaylist()">
+          <i class="fas fa-save"></i>
+          <span>Create Playlist</span>
+        </button>
+        <button class="btn btn-danger" onclick="hideAddPlaylistForm()">
+          <i class="fas fa-times"></i>
+          <span>Cancel</span>
+        </button>
+      </div>
+    </div>
+    
     <div class="admin-content">
+      <div class="playlist-selector" id="playlistSelector" style="display: none;">
+        <span>Current Playlist:</span>
+        <div class="playlist-dropdown">
+          <button class="playlist-dropdown-btn">
+            <span class="current-playlist" id="currentPlaylistName">Select Playlist</span>
+            <i class="fas fa-caret-down"></i>
+          </button>
+          <div class="playlist-dropdown-content" id="playlistDropdown">
+          </div>
+        </div>
+      </div>
+      
       <div class="stats-container">
         <div class="stat-card">
           <div class="stat-title">Total Videos</div>
@@ -396,270 +927,474 @@
     </div>
   </div>
 
+  <div class="confirmation-modal" id="confirmationModal">
+    <div class="confirmation-box">
+      <div class="confirmation-message" id="confirmationMessage"></div>
+      <input type="text" class="confirmation-input" id="confirmationInput" placeholder="Type to confirm">
+      <div class="confirmation-buttons">
+        <button class="btn btn-danger" onclick="cancelConfirmation()">Cancel</button>
+        <button class="btn btn-success" onclick="confirmAction()">Confirm</button>
+      </div>
+    </div>
+  </div>
+
   <script>
-    // Firebase config
-    const firebaseConfig = {
-      databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
-    };
+const firebaseConfig = {
+  databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
+};
 
-    firebase.initializeApp(firebaseConfig);
-    const db = firebase.database();
+firebase.initializeApp(firebaseConfig);
+const db = firebase.database();
 
-    // Helper functions
-    function getVideoId(link) {
-      try {
-        let url = new URL(link);
-        if (url.hostname.includes("youtu.be")) {
-          return url.pathname.substring(1);
-        } else {
-          return url.searchParams.get("v");
-        }
-      } catch (e) {
-        return null;
-      }
+let currentPlaylistId = null;
+let playlists = [];
+let pendingAction = null;
+let pendingActionData = null;
+const LAST_SELECTED_PLAYLIST_KEY = "lastSelectedPlaylist";
+
+function getVideoId(link) {
+  try {
+    let url = new URL(link);
+    if (url.hostname.includes("youtu.be")) {
+      return url.pathname.substring(1);
+    } else {
+      return url.searchParams.get("v");
     }
+  } catch (e) {
+    return null;
+  }
+}
 
-    function formatTime(seconds) {
-      if (!seconds) return "0:00";
-      const hrs = Math.floor(seconds / 3600);
-      const mins = Math.floor((seconds % 3600) / 60);
-      const secs = Math.floor(seconds % 60);
+function formatTime(seconds) {
+  if (!seconds) return "0:00";
+  const hrs = Math.floor(seconds / 3600);
+  const mins = Math.floor((seconds % 3600) / 60);
+  const secs = Math.floor(seconds % 60);
+  
+  if (hrs > 0) {
+    return `${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  } else {
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+  }
+}
+
+function formatDate(timestamp) {
+  if (!timestamp) return "Unknown";
+  const date = new Date(timestamp);
+  return date.toLocaleString();
+}
+
+function calculateTotalWatchTime(videos) {
+  return videos.reduce((total, video) => total + (video.data.time || 0), 0);
+}
+
+function findLastAdded(videos) {
+  if (videos.length === 0) return "-";
+  let lastAdded = videos[0];
+  for (const video of videos) {
+    if (video.data.addedAt > lastAdded.data.addedAt) {
+      lastAdded = video;
+    }
+  }
+  return formatDate(lastAdded.data.addedAt);
+}
+
+function showAddForm() {
+  document.getElementById('addVideoForm').style.display = 'block';
+  document.getElementById('videoUrl').focus();
+}
+
+function hideAddForm() {
+  document.getElementById('addVideoForm').style.display = 'none';
+  document.getElementById('videoUrl').value = '';
+  document.getElementById('videoTitle').value = '';
+}
+
+function showAddPlaylistForm() {
+  document.getElementById('addPlaylistForm').style.display = 'block';
+  document.getElementById('playlistName').focus();
+}
+
+function hideAddPlaylistForm() {
+  document.getElementById('addPlaylistForm').style.display = 'none';
+  document.getElementById('playlistName').value = '';
+  document.getElementById('playlistDescription').value = '';
+}
+
+function saveLastSelectedPlaylist(playlistId) {
+  localStorage.setItem(LAST_SELECTED_PLAYLIST_KEY, playlistId);
+}
+
+function getLastSelectedPlaylist() {
+  return localStorage.getItem(LAST_SELECTED_PLAYLIST_KEY);
+}
+
+function showConfirmation(message, action, actionData = null, expectedInput = null) {
+  document.getElementById('confirmationMessage').textContent = message;
+  document.getElementById('confirmationInput').placeholder = expectedInput ? `Type "${expectedInput}" to confirm` : 'Type to confirm';
+  document.getElementById('confirmationInput').value = '';
+  document.getElementById('confirmationModal').style.display = 'flex';
+  pendingAction = action;
+  pendingActionData = actionData;
+}
+
+function cancelConfirmation() {
+  document.getElementById('confirmationModal').style.display = 'none';
+  pendingAction = null;
+  pendingActionData = null;
+}
+
+function confirmAction() {
+  if (!pendingAction) {
+    cancelConfirmation();
+    return;
+  }
+
+  const input = document.getElementById('confirmationInput').value.trim();
+  const expectedInput = document.getElementById('confirmationInput').placeholder.includes('Type "') 
+    ? document.getElementById('confirmationInput').placeholder.split('Type "')[1].split('"')[0]
+    : null;
+
+  if (expectedInput && input !== expectedInput) {
+    alert('Confirmation text does not match. Please try again.');
+    return;
+  }
+
+  cancelConfirmation();
+  
+  if (pendingActionData) {
+    pendingAction(pendingActionData);
+  } else {
+    pendingAction();
+  }
+}
+
+function deletePlaylist(playlistId) {
+  db.ref(`playlists/${playlistId}`).remove()
+    .then(() => {
+      console.log("Playlist deleted successfully");
       
-      if (hrs > 0) {
-        return `${hrs}:${mins < 10 ? '0' : ''}${mins}:${secs < 10 ? '0' : ''}${secs}`;
+      if (currentPlaylistId === playlistId) {
+        currentPlaylistId = null;
+        localStorage.removeItem(LAST_SELECTED_PLAYLIST_KEY);
+        
+        loadPlaylists().then(() => {
+          if (playlists.length > 0) {
+            selectPlaylist(playlists[0].id);
+          } else {
+            document.getElementById("playlistSelector").style.display = "none";
+            document.getElementById("videosList").innerHTML = `
+              <tr>
+                <td colspan="3">
+                  <div class="empty-state">No playlists available. Create a new playlist to get started.</div>
+                </td>
+              </tr>
+            `;
+            updateStats([], 0);
+          }
+        });
       } else {
-        return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
+        loadPlaylists();
       }
+    })
+    .catch(error => {
+      console.error("Error deleting playlist:", error);
+      alert("Failed to delete playlist. Please try again.");
+    });
+}
+
+function confirmDeleteAll() {
+  if (!currentPlaylistId) {
+    alert("Please select a playlist first");
+    return;
+  }
+  
+  const playlist = playlists.find(p => p.id === currentPlaylistId);
+  if (!playlist) return;
+  
+  const confirmationMessage = `⚠️ WARNING: This will delete the ENTPLAYLIST "${playlist.data.name}" and ALL its videos permanently! ⚠️`;
+  const expectedInput = `DELETE ${playlist.data.name}`;
+  
+  showConfirmation(
+    confirmationMessage,
+    deletePlaylist,
+    currentPlaylistId,
+    expectedInput
+  );
+}
+
+function addPlaylist() {
+  const name = document.getElementById('playlistName').value.trim();
+  const description = document.getElementById('playlistDescription').value.trim();
+  
+  if (!name) {
+    alert("Please enter a playlist name");
+    return;
+  }
+  
+  const playlistRef = db.ref("playlists").push();
+  const playlistData = {
+    name: name,
+    description: description || "",
+    createdAt: firebase.database.ServerValue.TIMESTAMP,
+    videos: {}
+  };
+  
+  playlistRef.set(playlistData)
+    .then(() => {
+      alert("Playlist created successfully!");
+      hideAddPlaylistForm();
+      loadPlaylists().then(() => {
+        selectPlaylist(playlistRef.key);
+      });
+    })
+    .catch(error => {
+      console.error("Error creating playlist:", error);
+      alert("Failed to create playlist. Please try again.");
+    });
+}
+
+function loadPlaylists() {
+  return db.ref("playlists").once("value").then(snapshot => {
+    playlists = [];
+    const playlistDropdown = document.getElementById("playlistDropdown");
+    playlistDropdown.innerHTML = "";
+    
+    if (!snapshot.exists()) {
+      document.getElementById("playlistSelector").style.display = "none";
+      return;
     }
-
-    function formatDate(timestamp) {
-      if (!timestamp) return "Unknown";
-      const date = new Date(timestamp);
-      return date.toLocaleString();
-    }
-
-    function calculateTotalWatchTime(videos) {
-      return videos.reduce((total, video) => total + (video.data.time || 0), 0);
-    }
-
-    function findLastAdded(videos) {
-      if (videos.length === 0) return "-";
-      let lastAdded = videos[0];
-      for (const video of videos) {
-        if (video.data.addedAt > lastAdded.data.addedAt) {
-          lastAdded = video;
-        }
-      }
-      return formatDate(lastAdded.data.addedAt);
-    }
-
-    // Form visibility control
-    function showAddForm() {
-      document.getElementById('addVideoForm').style.display = 'block';
-      document.getElementById('videoUrl').focus();
-    }
-
-    function hideAddForm() {
-      document.getElementById('addVideoForm').style.display = 'none';
-      document.getElementById('videoUrl').value = '';
-      document.getElementById('videoTitle').value = '';
-    }
-
-    // Video management functions
-    function addVideo() {
-      const url = document.getElementById('videoUrl').value.trim();
-      const customTitle = document.getElementById('videoTitle').value.trim();
-      const videoId = getVideoId(url);
-
-      if (!videoId) {
-        alert("Please enter a valid YouTube URL");
-        return;
-      }
-
-      const videoRef = db.ref("videos/" + videoId);
-      const videoData = {
-        url: url,
-        time: 0,
-        addedAt: firebase.database.ServerValue.TIMESTAMP,
-        lastWatched: firebase.database.ServerValue.TIMESTAMP
+    
+    document.getElementById("playlistSelector").style.display = "flex";
+    
+    snapshot.forEach(child => {
+      const playlist = {
+        id: child.key,
+        data: child.val()
       };
-
-      if (customTitle) {
-        videoData.title = customTitle;
-      }
-
-      videoRef.set(videoData)
-        .then(() => {
-          alert("Video added successfully!");
-          hideAddForm();
-          loadAllVideos();
-        })
-        .catch(error => {
-          console.error("Error adding video:", error);
-          alert("Failed to add video. Please try again.");
-        });
-    }
-
-    function loadAllVideos() {
-      db.ref("videos").once("value").then(snapshot => {
-        const videosList = document.getElementById("videosList");
-        videosList.innerHTML = "";
-        
-        if (!snapshot.exists()) {
-          videosList.innerHTML = `
-            <tr>
-              <td colspan="3">
-                <div class="empty-state">No videos found in the database</div>
-              </td>
-            </tr>
-          `;
-          updateStats([], 0);
-          return;
-        }
-
-        const videos = [];
-        snapshot.forEach(child => {
-          const vid = child.key;
-          const data = child.val();
-          videos.push({
-            id: vid,
-            data: data
-          });
-        });
-
-        updateStats(videos, calculateTotalWatchTime(videos));
-        renderVideos(videos);
-      }).catch(error => {
-        console.error("Error loading videos:", error);
-        showError("Error loading videos. Please try again.");
-      });
-    }
-
-    function renderVideos(videos) {
-      const videosList = document.getElementById("videosList");
-      videosList.innerHTML = "";
-
-      if (videos.length === 0) {
-        videosList.innerHTML = `
-          <tr>
-            <td colspan="3">
-              <div class="empty-state">No videos found</div>
-            </td>
-          </tr>
-        `;
+      playlists.push(playlist);
+      
+      const playlistItem = document.createElement("a");
+      playlistItem.href = "#";
+      playlistItem.textContent = playlist.data.name;
+      playlistItem.onclick = (e) => {
+        e.preventDefault();
+        selectPlaylist(playlist.id);
+      };
+      playlistDropdown.appendChild(playlistItem);
+    });
+    
+    const lastSelectedPlaylistId = getLastSelectedPlaylist();
+    if (lastSelectedPlaylistId) {
+      const playlistExists = playlists.some(p => p.id === lastSelectedPlaylistId);
+      if (playlistExists) {
+        selectPlaylist(lastSelectedPlaylistId);
         return;
       }
-
-      videos.forEach(video => {
-        const row = document.createElement("tr");
-        const watchedTime = formatTime(video.data.time);
-        const addedDate = formatDate(video.data.addedAt);
-        const lastWatched = formatDate(video.data.lastWatched);
-        
-        row.innerHTML = `
-          <td>
-            <div class="video-info">
-              <div class="video-thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)"></div>
-            </div>
-          </td>
-          <td>
-            <div class="video-details">
-              <div class="video-title">${video.data.title || video.data.url}</div>
-              <div class="video-url">${video.data.url}</div>
-              <div class="video-stats">
-                <div>Added: ${addedDate}</div>
-                <div>Last watched: ${lastWatched || 'Never'}</div>
-                <div>Watched: ${watchedTime}</div>
-              </div>
-            </div>
-          </td>
-          <td>
-            <div class="action-buttons">
-              <button class="btn btn-danger" onclick="confirmDeleteVideo('${video.id}')">
-                <i class="fas fa-trash-alt"></i>
-                <span>Delete</span>
-              </button>
-            </div>
-          </td>
-        `;
-        videosList.appendChild(row);
-      });
     }
-
-    function updateStats(videos, totalWatchTime) {
-      document.getElementById("totalVideos").textContent = videos.length;
-      document.getElementById("totalWatchTime").textContent = formatTime(totalWatchTime);
-      document.getElementById("lastAdded").textContent = findLastAdded(videos);
+    
+    if (playlists.length > 0 && !currentPlaylistId) {
+      selectPlaylist(playlists[0].id);
     }
+  }).catch(error => {
+    console.error("Error loading playlists:", error);
+  });
+}
 
-    function showError(message) {
-      const videosList = document.getElementById("videosList");
+function selectPlaylist(playlistId) {
+  currentPlaylistId = playlistId;
+  const playlist = playlists.find(p => p.id === playlistId);
+  
+  if (playlist) {
+    document.getElementById("currentPlaylistName").textContent = playlist.data.name;
+    saveLastSelectedPlaylist(playlistId);
+    loadAllVideos();
+  }
+}
+
+function addVideo() {
+  if (!currentPlaylistId) {
+    alert("Please select a playlist first");
+    return;
+  }
+  
+  const url = document.getElementById('videoUrl').value.trim();
+  const customTitle = document.getElementById('videoTitle').value.trim();
+  const videoId = getVideoId(url);
+
+  if (!videoId) {
+    alert("Please enter a valid YouTube URL");
+    return;
+  }
+
+  const videoData = {
+    url: url,
+    title: customTitle || "",
+    time: 0,
+    addedAt: firebase.database.ServerValue.TIMESTAMP,
+    lastWatched: firebase.database.ServerValue.TIMESTAMP
+  };
+
+  const updates = {};
+  updates[`playlists/${currentPlaylistId}/videos/${videoId}`] = videoData;
+  
+  db.ref().update(updates)
+    .then(() => {
+      alert("Video added successfully!");
+      hideAddForm();
+      loadAllVideos();
+    })
+    .catch(error => {
+      console.error("Error adding video:", error);
+      alert("Failed to add video. Please try again.");
+    });
+}
+
+function loadAllVideos() {
+  if (!currentPlaylistId) {
+    return;
+  }
+  
+  db.ref(`playlists/${currentPlaylistId}/videos`).once("value").then(snapshot => {
+    const videosList = document.getElementById("videosList");
+    videosList.innerHTML = "";
+    
+    if (!snapshot.exists()) {
       videosList.innerHTML = `
         <tr>
           <td colspan="3">
-            <div class="empty-state">${message}</div>
+            <div class="empty-state">No videos found in this playlist</div>
           </td>
         </tr>
       `;
+      updateStats([], 0);
+      return;
     }
 
-    // Delete functions
-    function deleteVideo(videoId) {
-      db.ref("videos/" + videoId).remove()
-        .then(() => {
-          console.log("Video deleted successfully");
-          loadAllVideos();
-        })
-        .catch(error => {
-          console.error("Error deleting video:", error);
-          alert("Failed to delete video. Please try again.");
-        });
-    }
-
-    function deleteAllVideos() {
-      const videosRef = db.ref("videos");
-      
-      videosRef.remove()
-        .then(() => {
-          alert("All videos deleted successfully!");
-          loadAllVideos();
-        })
-        .catch(error => {
-          console.error("Error deleting all videos:", error);
-          alert("Failed to delete all videos. Please try again.");
-        });
-    }
-
-    // Confirmation dialogs
-    function confirmDeleteVideo(videoId) {
-      if (confirm("Are you sure you want to delete this video?\nThis action cannot be undone.")) {
-        deleteVideo(videoId);
-      }
-    }
-
-    function confirmDeleteAll() {
-      if (confirm("⚠️ WARNING: This will delete ALL videos permanently! ⚠️\n\nAre you sure you want to continue?")) {
-        const confirmation = prompt("THIS IS YOUR LAST WARNING!\n\nTo confirm deletion of ALL videos, please type:\nDELETE ALL VIDEOS");
-        
-        if (confirmation === "DELETE ALL VIDEOS") {
-          deleteAllVideos();
-        } else {
-          alert("Deletion cancelled. No videos were deleted.");
-        }
-      }
-    }
-
-    // Initialize the admin panel
-    window.onload = function() {
-      loadAllVideos();
-      
-      // Handle Enter key in form
-      document.getElementById('videoUrl').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-          addVideo();
-        }
+    const videos = [];
+    snapshot.forEach(child => {
+      const vid = child.key;
+      const data = child.val();
+      videos.push({
+        id: vid,
+        data: data
       });
-    };
+    });
+
+    updateStats(videos, calculateTotalWatchTime(videos));
+    renderVideos(videos);
+  }).catch(error => {
+    console.error("Error loading videos:", error);
+    showError("Error loading videos. Please try again.");
+  });
+}
+
+function renderVideos(videos) {
+  const videosList = document.getElementById("videosList");
+  videosList.innerHTML = "";
+
+  if (videos.length === 0) {
+    videosList.innerHTML = `
+      <tr>
+        <td colspan="3">
+          <div class="empty-state">No videos found in this playlist</div>
+        </td>
+      </tr>
+    `;
+    return;
+  }
+
+  videos.forEach(video => {
+    const row = document.createElement("tr");
+    const watchedTime = formatTime(video.data.time);
+    const addedDate = formatDate(video.data.addedAt);
+    const lastWatched = formatDate(video.data.lastWatched);
+    
+    row.innerHTML = `
+      <td>
+        <div class="video-info">
+          <div class="video-thumbnail" style="background-image: url(https://img.youtube.com/vi/${video.id}/mqdefault.jpg)"></div>
+        </div>
+      </td>
+      <td>
+        <div class="video-details">
+          <div class="video-title">${video.data.title || video.data.url}</div>
+          <div class="video-url">${video.data.url}</div>
+          <div class="video-stats">
+            <div>Added: ${addedDate}</div>
+            <div>Last watched: ${lastWatched || 'Never'}</div>
+            <div>Watched: ${watchedTime}</div>
+          </div>
+        </div>
+      </td>
+      <td>
+        <div class="action-buttons">
+          <button class="btn btn-danger" onclick="confirmDeleteVideo('${video.id}')">
+            <i class="fas fa-trash-alt"></i>
+            <span>Delete</span>
+          </button>
+        </div>
+      </td>
+    `;
+    videosList.appendChild(row);
+  });
+}
+
+function updateStats(videos, totalWatchTime) {
+  document.getElementById("totalVideos").textContent = videos.length;
+  document.getElementById("totalWatchTime").textContent = formatTime(totalWatchTime);
+  document.getElementById("lastAdded").textContent = findLastAdded(videos);
+}
+
+function showError(message) {
+  const videosList = document.getElementById("videosList");
+  videosList.innerHTML = `
+    <tr>
+      <td colspan="3">
+        <div class="empty-state">${message}</div>
+      </td>
+    </tr>
+  `;
+}
+
+function deleteVideo(videoId) {
+  if (!currentPlaylistId) return;
+  
+  db.ref(`playlists/${currentPlaylistId}/videos/${videoId}`).remove()
+    .then(() => {
+      console.log("Video deleted successfully");
+      loadAllVideos();
+    })
+    .catch(error => {
+      console.error("Error deleting video:", error);
+      alert("Failed to delete video. Please try again.");
+    });
+}
+
+function confirmDeleteVideo(videoId) {
+  showConfirmation(
+    "Are you sure you want to delete this video? This action cannot be undone.",
+    deleteVideo,
+    videoId,
+    "DELETE"
+  );
+}
+
+window.onload = function() {
+  loadPlaylists();
+  
+  document.getElementById('videoUrl').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      addVideo();
+    }
+  });
+  
+  document.getElementById('playlistName').addEventListener('keypress', function(e) {
+    if (e.key === 'Enter') {
+      addPlaylist();
+    }
+  });
+};
   </script>
 </body>
 </html>
