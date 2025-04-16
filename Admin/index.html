@@ -948,8 +948,6 @@ const db = firebase.database();
 
 let currentPlaylistId = null;
 let playlists = [];
-let pendingAction = null;
-let pendingActionData = null;
 const LAST_SELECTED_PLAYLIST_KEY = "lastSelectedPlaylist";
 
 function getVideoId(link) {
@@ -1029,46 +1027,6 @@ function getLastSelectedPlaylist() {
   return localStorage.getItem(LAST_SELECTED_PLAYLIST_KEY);
 }
 
-function showConfirmation(message, action, actionData = null, expectedInput = null) {
-  document.getElementById('confirmationMessage').textContent = message;
-  document.getElementById('confirmationInput').placeholder = expectedInput ? `Type "${expectedInput}" to confirm` : 'Type to confirm';
-  document.getElementById('confirmationInput').value = '';
-  document.getElementById('confirmationModal').style.display = 'flex';
-  pendingAction = action;
-  pendingActionData = actionData;
-}
-
-function cancelConfirmation() {
-  document.getElementById('confirmationModal').style.display = 'none';
-  pendingAction = null;
-  pendingActionData = null;
-}
-
-function confirmAction() {
-  if (!pendingAction) {
-    cancelConfirmation();
-    return;
-  }
-
-  const input = document.getElementById('confirmationInput').value.trim();
-  const expectedInput = document.getElementById('confirmationInput').placeholder.includes('Type "') 
-    ? document.getElementById('confirmationInput').placeholder.split('Type "')[1].split('"')[0]
-    : null;
-
-  if (expectedInput && input !== expectedInput) {
-    alert('Confirmation text does not match. Please try again.');
-    return;
-  }
-
-  cancelConfirmation();
-  
-  if (pendingActionData) {
-    pendingAction(pendingActionData);
-  } else {
-    pendingAction();
-  }
-}
-
 function deletePlaylist(playlistId) {
   db.ref(`playlists/${playlistId}`).remove()
     .then(() => {
@@ -1112,15 +1070,14 @@ function confirmDeleteAll() {
   const playlist = playlists.find(p => p.id === currentPlaylistId);
   if (!playlist) return;
   
-  const confirmationMessage = `⚠️ WARNING: This will delete the ENTPLAYLIST "${playlist.data.name}" and ALL its videos permanently! ⚠️`;
-  const expectedInput = `DELETE ${playlist.data.name}`;
+  const confirmationMessage = `⚠️ WARNING: This will delete the ENTIRE PLAYLIST "${playlist.data.name}" and ALL its videos permanently! ⚠️\n\nType "DELETE" to confirm:`;
+  const userInput = prompt(confirmationMessage);
   
-  showConfirmation(
-    confirmationMessage,
-    deletePlaylist,
-    currentPlaylistId,
-    expectedInput
-  );
+  if (userInput === "DELETE") {
+    deletePlaylist(currentPlaylistId);
+  } else if (userInput !== null) {
+    alert("Confirmation text does not match. Playlist was not deleted.");
+  }
 }
 
 function addPlaylist() {
@@ -1372,12 +1329,9 @@ function deleteVideo(videoId) {
 }
 
 function confirmDeleteVideo(videoId) {
-  showConfirmation(
-    "Are you sure you want to delete this video? This action cannot be undone.",
-    deleteVideo,
-    videoId,
-    "DELETE"
-  );
+  if (confirm("Are you sure you want to delete this video?")) {
+    deleteVideo(videoId);
+  }
 }
 
 window.onload = function() {
