@@ -1161,9 +1161,11 @@ margin-top: -48%;
   </div>
   
   <div class="overlay" id="overlay"></div>
+  
+  
 
- <script>
-// Firebase config
+<script>
+  // Firebase config
 const firebaseConfig = {
   databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
 };
@@ -1184,6 +1186,7 @@ let currentVideoIndex = -1;
 let lastUpdateTime = 0;
 let currentPlaylistId = 'default';
 let playlists = {};
+let isInitialLoad = true;
 
 // DOM Elements
 const adminPanel = document.getElementById('adminPanel');
@@ -1231,6 +1234,13 @@ function saveAndLoadVideo() {
 
   if (!videoId) {
     alert("Please enter a valid YouTube link.");
+    return;
+  }
+
+  // Check if video already exists in current playlist
+  const videoExists = playlistVideos.some(video => video.id === videoId);
+  if (videoExists) {
+    alert("This video is already in the current playlist.");
     return;
   }
 
@@ -1332,13 +1342,19 @@ function onPlayerStateChange(event) {
 }
 
 function setupRealtimeListener() {
-  // Load last played playlist first
+  // First, load the last played playlist from Firebase
   db.ref(LAST_PLAYED_PLAYLIST_KEY).once('value').then(snapshot => {
     if (snapshot.exists()) {
       currentPlaylistId = snapshot.val();
     }
     
-    // Then load playlists
+    // Check URL hash for playlist-specific video
+    const hashParts = window.location.hash.substring(1).split('|');
+    if (hashParts.length === 2) {
+      currentPlaylistId = hashParts[0];
+    }
+    
+    // Then load all playlists
     db.ref("playlists").on("value", (snapshot) => {
       if (snapshot.exists()) {
         playlists = snapshot.val();
@@ -1360,8 +1376,17 @@ function setupRealtimeListener() {
         // Update current playlist name display
         currentPlaylistName.textContent = playlists[currentPlaylistId].name || "Default Playlist";
         
+        // Save the current playlist to Firebase (this ensures it's always up to date)
+        db.ref(LAST_PLAYED_PLAYLIST_KEY).set(currentPlaylistId);
+        
         // Then load videos for current playlist
         loadVideosForCurrentPlaylist();
+        
+        // After initial load, check if we need to load a video from URL hash
+        if (isInitialLoad && hashParts.length === 2 && hashParts[0] === currentPlaylistId) {
+          loadSavedVideo(hashParts[1]);
+          isInitialLoad = false;
+        }
       } else {
         // Create default playlist if none exist
         db.ref("playlists/default").set({
@@ -1466,8 +1491,9 @@ function loadVideosForCurrentPlaylist() {
     playlistVideos = newPlaylistVideos;
 
     // Auto-play the most recently watched video if available and no hash in URL
-    if (mostRecentVideo && !videoId && !window.location.hash) {
+    if (mostRecentVideo && !videoId && !window.location.hash && isInitialLoad) {
       loadSavedVideo(mostRecentVideo);
+      isInitialLoad = false;
     }
     
     // Update current video index if we have a videoId but no index
@@ -1564,11 +1590,32 @@ function switchToPlaylist(playlistId) {
     player.stopVideo();
   }
   
-  // Check URL hash for playlist-specific video
-  const hashParts = window.location.hash.substring(1).split('|');
-  if (hashParts.length === 2 && hashParts[0] === currentPlaylistId) {
-    loadSavedVideo(hashParts[1]);
-  }
+  // Clear URL hash
+  window.location.hash = '';
+  
+  // Now find and play the most recently watched video in this playlist
+  findAndPlayLastWatchedVideo(playlistId);
+}
+
+function findAndPlayLastWatchedVideo(playlistId) {
+  db.ref(`playlists/${playlistId}/videos`).orderByChild("lastWatched").once("value").then(snapshot => {
+    if (!snapshot.exists()) return;
+    
+    let lastVideoId = null;
+    let lastWatchedTime = 0;
+    
+    snapshot.forEach(child => {
+      const videoData = child.val();
+      if (videoData.lastWatched && videoData.lastWatched > lastWatchedTime) {
+        lastWatchedTime = videoData.lastWatched;
+        lastVideoId = child.key;
+      }
+    });
+    
+    if (lastVideoId) {
+      loadSavedVideo(lastVideoId);
+    }
+  });
 }
 
 function createNewPlaylist() {
@@ -1616,6 +1663,12 @@ function formatTime(seconds) {
 }
 
 function loadSavedVideo(vid) {
+  // Check if video exists in current playlist
+  if (!playlistVideos.some(video => video.id === vid)) {
+    console.error("Video not found in current playlist");
+    return;
+  }
+  
   videoId = vid;
   db.ref(`playlists/${currentPlaylistId}/videos/${vid}`).once("value").then(snapshot => {
     const video = snapshot.val();
@@ -1657,6 +1710,7 @@ function highlightCurrentVideo() {
     if (item.getAttribute("data-video-id") === videoId) {
       item.classList.add("active");
       currentPlayingItem = item;
+      item.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
     }
   });
 }
@@ -1691,13 +1745,6 @@ window.addEventListener('beforeunload', function(e) {
 window.onload = function() {
   setupRealtimeListener();
   
-  // Check if there's a playlist and video ID in URL hash
-  const hashParts = window.location.hash.substring(1).split('|');
-  if (hashParts.length === 2) {
-    currentPlaylistId = hashParts[0];
-    loadSavedVideo(hashParts[1]);
-  }
-  
   // Add event listener for Enter key in input field
   document.getElementById("videoLink").addEventListener("keypress", function(e) {
     if (e.key === "Enter") {
@@ -1705,7 +1752,10 @@ window.onload = function() {
     }
   });
 };
- </script>
+</script>
+ 
+ 
+ 
  </body>
 </html>
    
