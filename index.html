@@ -846,17 +846,6 @@ header::after {
   gap: 10px;
 }
 
-.playlist-option {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 12px 16px;
-  background-color: var(--dark-3);
-  border-radius: var(--radius-md);
-  cursor: pointer;
-  transition: var(--transition);
-  border: 1px solid var(--dark-4);
-}
 
 .playlist-option:hover {
   background-color: var(--dark-4);
@@ -868,17 +857,17 @@ header::after {
   border-color: var(--primary);
 }
 
-.playlist-option-name {
-  font-weight: 500;
-}
 
-.playlist-option-count {
-  font-size: 12px;
-  color: var(--gray-1);
-  background-color: var(--dark-4);
-  padding: 3px 8px;
-  border-radius: var(--radius-full);
-}
+
+
+ 
+ 
+
+
+
+
+
+
 
 .playlist-videos {
   display: none;
@@ -1053,6 +1042,96 @@ margin-top: -48%;
 }
 
 
+
+.playlist-option {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr;
+  align-items: center;
+  padding: 12px 16px;
+  background-color: var(--dark-3);
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  transition: var(--transition);
+  border: 1px solid var(--dark-4);
+  gap: 10px;
+}
+
+.playlist-option-name {
+  font-weight: 500;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  text-align: left;
+}
+
+.playlist-option-count {
+  text-align: center;
+  background-color: var(--dark-4);
+  color: var(--light-2);
+  padding: 5px 12px;
+  border-radius: var(--radius-full);
+  font-size: 13px;
+  font-weight: 700;
+  justify-self: center;
+}
+
+.auto-play-toggle {
+  background: none;
+  border: none;
+  padding: 5px 10px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  color: var(--gray-1);
+  font-size: 12px;
+  transition: var(--transition);
+  justify-self: end;
+}
+
+/* Existing toggle switch styles remain the same */
+.toggle-switch {
+  width: 40px;
+  height: 20px;
+  border-radius: var(--radius-full);
+  position: relative;
+  transition: var(--transition);
+  background-color: var(--dark-4);
+}
+
+.toggle-switch.on {
+  background-color: var(--primary);
+}
+
+.toggle-switch.off {
+  background-color: var(--dark-4);
+}
+
+.toggle-knob {
+  position: absolute;
+  width: 16px;
+  height: 16px;
+  background-color: var(--light-1);
+  border-radius: var(--radius-full);
+  top: 2px;
+  left: 2px;
+  transition: var(--transition);
+  box-shadow: var(--shadow-sm);
+}
+
+.toggle-switch.on .toggle-knob {
+  left: 22px;
+}
+
+
+
+.toggle-label {
+  display: none;
+  font-weight: 500;
+}
+
+
 </style>
 </head>
 <body>
@@ -1146,9 +1225,13 @@ margin-top: -48%;
           <i class="fas fa-list"></i> Your Playlists
         </div>
         
+        
+        
         <div class="playlist-selector" id="playlistSelector">
           <!-- Playlists will be added here dynamically -->
         </div>
+        
+        
         
         <div class="create-playlist-form">
           <input type="text" id="newPlaylistName" placeholder="New playlist name">
@@ -1165,7 +1248,7 @@ margin-top: -48%;
   
 
 <script>
-  // Firebase config
+// Firebase config
 const firebaseConfig = {
   databaseURL: "https://baul-vercel-app-default-rtdb.firebaseio.com/"
 };
@@ -1187,6 +1270,7 @@ let lastUpdateTime = 0;
 let currentPlaylistId = 'default';
 let playlists = {};
 let isInitialLoad = true;
+let autoPlayNextEnabled = true; // Default to true
 
 // Enhanced time tracking variables
 let lastSavedTime = 0;
@@ -1395,6 +1479,11 @@ function onPlayerStateChange(event) {
   if (event.data === YT.PlayerState.PLAYING) {
     highlightCurrentVideo();
   }
+  
+  // Auto play next video when current video ends (if enabled)
+  if (event.data === YT.PlayerState.ENDED && autoPlayNextEnabled) {
+    playNextVideo();
+  }
 }
 
 function setupRealtimeListener() {
@@ -1423,7 +1512,8 @@ function setupRealtimeListener() {
             // Create default playlist if it doesn't exist
             db.ref("playlists/default").set({
               name: "Default Playlist",
-              createdAt: firebase.database.ServerValue.TIMESTAMP
+              createdAt: firebase.database.ServerValue.TIMESTAMP,
+              autoPlayNext: true // Default to true for new playlists
             });
             return;
           }
@@ -1431,6 +1521,9 @@ function setupRealtimeListener() {
         
         // Update current playlist name display
         currentPlaylistName.textContent = playlists[currentPlaylistId].name || "Default Playlist";
+        
+        // Load auto-play next setting for this playlist
+        autoPlayNextEnabled = playlists[currentPlaylistId].autoPlayNext !== false; // Default to true if not set
         
         // Save the current playlist to Firebase (this ensures it's always up to date)
         db.ref(LAST_PLAYED_PLAYLIST_KEY).set(currentPlaylistId);
@@ -1447,7 +1540,8 @@ function setupRealtimeListener() {
         // Create default playlist if none exist
         db.ref("playlists/default").set({
           name: "Default Playlist",
-          createdAt: firebase.database.ServerValue.TIMESTAMP
+          createdAt: firebase.database.ServerValue.TIMESTAMP,
+          autoPlayNext: true // Default to true for new playlists
         });
       }
     });
@@ -1567,10 +1661,51 @@ function renderPlaylistSelector() {
     const playlist = playlists[playlistId];
     const playlistItem = document.createElement('div');
     playlistItem.className = `playlist-option ${playlistId === currentPlaylistId ? 'active' : ''}`;
+    
+    // Create toggle button for auto-play next
+    const toggleButton = document.createElement('button');
+    toggleButton.className = 'auto-play-toggle';
+    toggleButton.innerHTML = `
+      <span class="toggle-label">Auto Next</span>
+      <span class="toggle-switch ${playlist.autoPlayNext !== false ? 'on' : 'off'}">
+        <span class="toggle-knob"></span>
+      </span>
+    `;
+    
+    // Set initial state
+    if (playlistId === currentPlaylistId) {
+      autoPlayNextEnabled = playlist.autoPlayNext !== false;
+    }
+    
+    // Toggle click handler
+    toggleButton.addEventListener('click', (e) => {
+      e.stopPropagation();
+      const newState = !(playlist.autoPlayNext !== false);
+      
+      // Update Firebase
+      db.ref(`playlists/${playlistId}/autoPlayNext`).set(newState).then(() => {
+        // Update local state
+        playlists[playlistId].autoPlayNext = newState;
+        
+        // Update UI
+        const toggleSwitch = toggleButton.querySelector('.toggle-switch');
+        toggleSwitch.classList.toggle('on', newState);
+        toggleSwitch.classList.toggle('off', !newState);
+        
+        // If this is the current playlist, update the global setting
+        if (playlistId === currentPlaylistId) {
+          autoPlayNextEnabled = newState;
+        }
+      });
+    });
+    
     playlistItem.innerHTML = `
       <div class="playlist-option-name">${playlist.name || 'Unnamed Playlist'}</div>
       <div class="playlist-option-count">${playlist.videos ? Object.keys(playlist.videos).length : 0}</div>
     `;
+    
+    // Add toggle button to the playlist item
+    playlistItem.appendChild(toggleButton);
     
     playlistItem.addEventListener('click', () => {
       // Show videos for this playlist
@@ -1635,6 +1770,9 @@ function switchToPlaylist(playlistId) {
   currentPlaylistId = playlistId;
   currentPlaylistName.textContent = playlists[playlistId].name || "Default Playlist";
   
+  // Update auto-play next setting for this playlist
+  autoPlayNextEnabled = playlists[playlistId].autoPlayNext !== false;
+  
   // Save the last played playlist to Firebase
   db.ref(LAST_PLAYED_PLAYLIST_KEY).set(playlistId);
   
@@ -1692,7 +1830,8 @@ function createNewPlaylist() {
   db.ref(`playlists/${newPlaylistId}`).set({
     name: playlistName,
     createdAt: firebase.database.ServerValue.TIMESTAMP,
-    videos: {} // Explicitly set empty videos object
+    videos: {}, // Explicitly set empty videos object
+    autoPlayNext: true // Default to true for new playlists
   }).then(() => {
     document.getElementById('newPlaylistName').value = '';
     
@@ -1849,10 +1988,8 @@ window.onload = function() {
 };
 </script>
  
- 
- 
- 
+
  </body>
 </html>
-   
+ 
 
