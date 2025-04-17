@@ -1188,6 +1188,13 @@ let currentPlaylistId = 'default';
 let playlists = {};
 let isInitialLoad = true;
 
+// Enhanced time tracking variables
+let lastSavedTime = 0;
+let unsavedChanges = false;
+let pendingSave = false;
+let forceSaveOnUnload = false;
+let saveInterval;
+
 // DOM Elements
 const adminPanel = document.getElementById('adminPanel');
 const overlay = document.getElementById('overlay');
@@ -1259,6 +1266,11 @@ function saveAndLoadVideo() {
 }
 
 function loadPlayer(videoId, startTime) {
+  // Save current time before loading new video
+  if (player && lastWatchedVideoId && unsavedChanges) {
+    forceSaveCurrentTime();
+  }
+  
   if (player) {
     player.loadVideoById({ videoId: videoId, startSeconds: startTime });
   } else {
@@ -1288,19 +1300,63 @@ function loadPlayer(videoId, startTime) {
   // Update current video index
   currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
   updateNavButtons();
+  
+  // Reset tracking variables for new video
+  lastSavedTime = startTime;
+  unsavedChanges = false;
+  pendingSave = false;
 }
 
-function saveCurrentTime() {
+// Enhanced time saving functions
+function forceSaveCurrentTime() {
+  if (!player || !videoId) return;
+  
+  const currentTime = Math.floor(player.getCurrentTime());
+  lastSavedTime = currentTime;
+  unsavedChanges = false;
+  pendingSave = false;
+  
+  isSaving = true;
+  
+  db.ref(`playlists/${currentPlaylistId}/videos/${videoId}`).update({
+    time: currentTime,
+    lastWatched: firebase.database.ServerValue.TIMESTAMP
+  }).then(() => {
+    console.log("Time forcefully saved:", currentTime);
+    isSaving = false;
+    updateProgressBarForVideo(videoId, currentTime);
+  }).catch(error => {
+    console.error("Error saving time:", error);
+    isSaving = false;
+  });
+}
+
+function checkAndSaveTime() {
   if (!player || !videoId || isSaving) return;
   
   const currentTime = Math.floor(player.getCurrentTime());
   const now = Date.now();
   
-  // Only save if at least 5 seconds have passed since last save
-  if (now - lastUpdateTime < 5000) return;
+  // Only proceed if time has changed significantly (more than 1 second)
+  if (Math.abs(currentTime - lastSavedTime) < 1 && !forceSaveOnUnload) return;
+  
+  // If we're forcing a save (like on unload), proceed regardless of time difference
+  if (!forceSaveOnUnload) {
+    // Only save if at least 2 seconds have passed since last save attempt
+    if (now - lastUpdateTime < 2000) {
+      if (!pendingSave) {
+        pendingSave = true;
+        setTimeout(checkAndSaveTime, 2000 - (now - lastUpdateTime));
+      }
+      return;
+    }
+  }
   
   isSaving = true;
   lastUpdateTime = now;
+  lastSavedTime = currentTime;
+  unsavedChanges = false;
+  pendingSave = false;
   
   db.ref(`playlists/${currentPlaylistId}/videos/${videoId}`).update({
     time: currentTime,
@@ -1316,8 +1372,9 @@ function saveCurrentTime() {
 }
 
 function onPlayerReady(event) {
-  // Set up periodic saving (every 5 seconds)
-  setInterval(saveCurrentTime, 5000);
+  // Set up periodic checking (every 1 second)
+  clearInterval(saveInterval);
+  saveInterval = setInterval(checkAndSaveTime, 1000);
   
   // Update current video's duration if not set
   if (player && player.getDuration) {
@@ -1332,9 +1389,8 @@ function onPlayerReady(event) {
 }
 
 function onPlayerStateChange(event) {
-  if (event.data === YT.PlayerState.PAUSED || event.data === YT.PlayerState.ENDED) {
-    saveCurrentTime();
-  }
+  // Always check for save when player state changes
+  checkAndSaveTime();
   
   if (event.data === YT.PlayerState.PLAYING) {
     highlightCurrentVideo();
@@ -1571,6 +1627,11 @@ function showPlaylistVideos(playlistId, playlistElement) {
 }
 
 function switchToPlaylist(playlistId) {
+  // Save current time before switching
+  if (player && videoId && unsavedChanges) {
+    forceSaveCurrentTime();
+  }
+  
   currentPlaylistId = playlistId;
   currentPlaylistName.textContent = playlists[playlistId].name || "Default Playlist";
   
@@ -1680,6 +1741,11 @@ function loadSavedVideo(vid) {
 
 function playNextVideo() {
   if (currentVideoIndex < playlistVideos.length - 1) {
+    // Save current time before moving to next video
+    if (player && videoId && unsavedChanges) {
+      forceSaveCurrentTime();
+    }
+    
     const nextVideo = playlistVideos[currentVideoIndex + 1];
     loadSavedVideo(nextVideo.id);
   }
@@ -1687,6 +1753,11 @@ function playNextVideo() {
 
 function playPreviousVideo() {
   if (currentVideoIndex > 0) {
+    // Save current time before moving to previous video
+    if (player && videoId && unsavedChanges) {
+      forceSaveCurrentTime();
+    }
+    
     const prevVideo = playlistVideos[currentVideoIndex - 1];
     loadSavedVideo(prevVideo.id);
   }
@@ -1733,13 +1804,37 @@ function updateProgressBarForVideo(vid, currentTime) {
     const percentage = calculateProgress(currentTime, duration);
     progressBar.style.width = `${percentage}%`;
     timeDisplay.textContent = formatTime(currentTime);
+    
+    // Track if we have unsaved changes
+    if (vid === videoId) {
+      unsavedChanges = Math.abs(currentTime - lastSavedTime) >= 1;
+    }
   }
 }
 
-// Save time when page is about to unload
-window.addEventListener('beforeunload', function(e) {
-  saveCurrentTime();
-});
+// Enhanced unload handlers
+function handleBeforeUnload(e) {
+  if (player && videoId && unsavedChanges) {
+    forceSaveOnUnload = true;
+    forceSaveCurrentTime();
+    
+    // Chrome requires returnValue to be set
+    e.preventDefault();
+    e.returnValue = '';
+    return '';
+  }
+}
+
+function handleVisibilityChange() {
+  if (document.visibilityState === 'hidden' && player && videoId && unsavedChanges) {
+    forceSaveCurrentTime();
+  }
+}
+
+// Set up event listeners for page unload/scenarios
+window.addEventListener('beforeunload', handleBeforeUnload);
+window.addEventListener('pagehide', handleBeforeUnload);
+document.addEventListener('visibilitychange', handleVisibilityChange);
 
 // Load video list on page load
 window.onload = function() {
@@ -1753,6 +1848,7 @@ window.onload = function() {
   });
 };
 </script>
+ 
  
  
  
