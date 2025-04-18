@@ -16,7 +16,11 @@
     --primary: #F48FB1; /* হালকা গোলাপী */
     --primary-dark: #F06292;
     --primary-light: rgba(244, 143, 177, 0.15);
+    
     --gradient: linear-gradient(135deg, #F48FB1 0%, #CE93D8 50%, #64B5F6 100%); /* হালকা গোলাপী -> হালকা বেগুনী -> হালকা নীল */
+    
+  --gradienttwo: linear-gradient(135deg, #64B5F6 0%, #CE93D8 50%, #F48FB1 100%); /* হালকা গোলাপী -> হালকা বেগুনী -> হালকা নীল */
+
     --dark-1: #18122B;
     --dark-2: #3A2D3B;
     --dark-3: #4A3B53;
@@ -228,7 +232,7 @@ header::after {
   display: flex;
   justify-content: center;
   gap: 16px;
-  padding: 18px;
+  padding: 16px;
   background-color: var(--dark-2);
   border-radius: 0 0 var(--radius-xl) var(--radius-xl);
   border-top: 1px solid var(--dark-4);
@@ -253,6 +257,47 @@ header::after {
   min-width: 130px;
   justify-content: center;
 }
+
+
+
+
+
+
+
+
+#prevBtn {
+  background: var(--gradienttwo);
+  color: var(--light-1);
+  border: none;
+  padding: 12px 24px;
+  border-radius: var(--radius-md);
+  cursor: pointer;
+  font-size: 15px;
+  font-weight: 600;
+  transition: var(--transition);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: var(--shadow-md);
+  position: relative;
+  overflow: hidden;
+  min-width: 130px;
+  justify-content: center;
+}
+
+
+
+
+#prevBtn:hover {
+  transform: translateY(-2px);
+  box-shadow: var(--shadow-lg);
+  background: linear-gradient(135deg, #FF4D6D 0%, #FF7B8B 50%, #FFA88B 100%);
+}
+
+
+
+
+
 
 .player-controls button:hover {
   transform: translateY(-2px);
@@ -1136,6 +1181,7 @@ margin-top: -48%;
 
 
 </style>
+
 </head>
 <body>
   <div class="container">
@@ -1249,7 +1295,6 @@ margin-top: -48%;
   <div class="overlay" id="overlay"></div>
   
   
-
 <script>
 // Firebase config
 const firebaseConfig = {
@@ -1273,13 +1318,11 @@ let lastUpdateTime = 0;
 let currentPlaylistId = 'default';
 let playlists = {};
 let isInitialLoad = true;
-let autoPlayNextEnabled = true; // Default to true
+let autoPlayNextEnabled = true;
 
-// Enhanced time tracking variables
+// Time tracking variables
 let lastSavedTime = 0;
 let unsavedChanges = false;
-let pendingSave = false;
-let forceSaveOnUnload = false;
 let saveInterval;
 
 // DOM Elements
@@ -1313,7 +1356,7 @@ function getVideoId(link) {
   try {
     let url = new URL(link);
     if (url.hostname.includes("youtu.be")) {
-      return url.pathname.substring(1); // youtu.be/VIDEO_ID
+      return url.pathname.substring(1);
     } else {
       return url.searchParams.get("v");
     }
@@ -1331,14 +1374,12 @@ function saveAndLoadVideo() {
     return;
   }
 
-  // Check if video already exists in current playlist
   const videoExists = playlistVideos.some(video => video.id === videoId);
   if (videoExists) {
     alert("This video is already in the current playlist.");
     return;
   }
 
-  // Save to the current playlist
   const videoRef = db.ref(`playlists/${currentPlaylistId}/videos/${videoId}`);
   videoRef.set({
     url: link,
@@ -1353,7 +1394,6 @@ function saveAndLoadVideo() {
 }
 
 function loadPlayer(videoId, startTime) {
-  // Save current time before loading new video
   if (player && lastWatchedVideoId && unsavedChanges) {
     forceSaveCurrentTime();
   }
@@ -1377,31 +1417,21 @@ function loadPlayer(videoId, startTime) {
     });
   }
   
-  // Update last watched timestamp
   db.ref(`playlists/${currentPlaylistId}/videos/${videoId}/lastWatched`).set(firebase.database.ServerValue.TIMESTAMP);
   lastWatchedVideoId = videoId;
-  
-  // Update URL hash
   window.location.hash = `${currentPlaylistId}|${videoId}`;
-  
-  // Update current video index
   currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
   updateNavButtons();
-  
-  // Reset tracking variables for new video
   lastSavedTime = startTime;
   unsavedChanges = false;
-  pendingSave = false;
 }
 
-// Enhanced time saving functions
 function forceSaveCurrentTime() {
   if (!player || !videoId) return;
   
   const currentTime = Math.floor(player.getCurrentTime());
   lastSavedTime = currentTime;
   unsavedChanges = false;
-  pendingSave = false;
   
   isSaving = true;
   
@@ -1422,28 +1452,13 @@ function checkAndSaveTime() {
   if (!player || !videoId || isSaving) return;
   
   const currentTime = Math.floor(player.getCurrentTime());
-  const now = Date.now();
   
-  // Only proceed if time has changed significantly (more than 1 second)
-  if (Math.abs(currentTime - lastSavedTime) < 1 && !forceSaveOnUnload) return;
-  
-  // If we're forcing a save (like on unload), proceed regardless of time difference
-  if (!forceSaveOnUnload) {
-    // Only save if at least 2 seconds have passed since last save attempt
-    if (now - lastUpdateTime < 2000) {
-      if (!pendingSave) {
-        pendingSave = true;
-        setTimeout(checkAndSaveTime, 2000 - (now - lastUpdateTime));
-      }
-      return;
-    }
-  }
+  // Only save if time has changed by at least 1 second
+  if (Math.abs(currentTime - lastSavedTime) < 1) return;
   
   isSaving = true;
-  lastUpdateTime = now;
   lastSavedTime = currentTime;
   unsavedChanges = false;
-  pendingSave = false;
   
   db.ref(`playlists/${currentPlaylistId}/videos/${videoId}`).update({
     time: currentTime,
@@ -1459,11 +1474,9 @@ function checkAndSaveTime() {
 }
 
 function onPlayerReady(event) {
-  // Set up periodic checking (every 1 second)
   clearInterval(saveInterval);
   saveInterval = setInterval(checkAndSaveTime, 1000);
   
-  // Update current video's duration if not set
   if (player && player.getDuration) {
     const duration = player.getDuration();
     if (duration > 0) {
@@ -1476,75 +1489,59 @@ function onPlayerReady(event) {
 }
 
 function onPlayerStateChange(event) {
-  // Always check for save when player state changes
   checkAndSaveTime();
   
   if (event.data === YT.PlayerState.PLAYING) {
     highlightCurrentVideo();
   }
   
-  // Auto play next video when current video ends (if enabled)
   if (event.data === YT.PlayerState.ENDED && autoPlayNextEnabled) {
     playNextVideo();
   }
 }
 
 function setupRealtimeListener() {
-  // First, load the last played playlist from Firebase
   db.ref(LAST_PLAYED_PLAYLIST_KEY).once('value').then(snapshot => {
     if (snapshot.exists()) {
       currentPlaylistId = snapshot.val();
     }
     
-    // Check URL hash for playlist-specific video
     const hashParts = window.location.hash.substring(1).split('|');
     if (hashParts.length === 2) {
       currentPlaylistId = hashParts[0];
     }
     
-    // Then load all playlists
     db.ref("playlists").on("value", (snapshot) => {
       if (snapshot.exists()) {
         playlists = snapshot.val();
         renderPlaylistSelector();
         
-        // If current playlist doesn't exist, fall back to default
         if (!playlists[currentPlaylistId]) {
           currentPlaylistId = 'default';
           if (!playlists[currentPlaylistId]) {
-            // Create default playlist if it doesn't exist
             db.ref("playlists/default").set({
               name: "Default Playlist",
               createdAt: firebase.database.ServerValue.TIMESTAMP,
-              autoPlayNext: true // Default to true for new playlists
+              autoPlayNext: true
             });
             return;
           }
         }
         
-        // Update current playlist name display
         currentPlaylistName.textContent = playlists[currentPlaylistId].name || "Default Playlist";
-        
-        // Load auto-play next setting for this playlist
-        autoPlayNextEnabled = playlists[currentPlaylistId].autoPlayNext !== false; // Default to true if not set
-        
-        // Save the current playlist to Firebase (this ensures it's always up to date)
+        autoPlayNextEnabled = playlists[currentPlaylistId].autoPlayNext !== false;
         db.ref(LAST_PLAYED_PLAYLIST_KEY).set(currentPlaylistId);
-        
-        // Then load videos for current playlist
         loadVideosForCurrentPlaylist();
         
-        // After initial load, check if we need to load a video from URL hash
         if (isInitialLoad && hashParts.length === 2 && hashParts[0] === currentPlaylistId) {
           loadSavedVideo(hashParts[1]);
           isInitialLoad = false;
         }
       } else {
-        // Create default playlist if none exist
         db.ref("playlists/default").set({
           name: "Default Playlist",
           createdAt: firebase.database.ServerValue.TIMESTAMP,
-          autoPlayNext: true // Default to true for new playlists
+          autoPlayNext: true
         });
       }
     });
@@ -1592,17 +1589,14 @@ function loadVideosForCurrentPlaylist() {
         duration: duration
       });
 
-      // Track the most recently watched video
       if (data.lastWatched && data.lastWatched > mostRecentTime) {
         mostRecentTime = data.lastWatched;
         mostRecentVideo = vid;
       }
     });
 
-    // Update playlist count
     document.getElementById("playlistCount").textContent = `${newPlaylistVideos.length} ${newPlaylistVideos.length === 1 ? 'video' : 'videos'}`;
 
-    // Only re-render if the playlist has changed
     if (JSON.stringify(playlistVideos.map(v => v.id)) !== JSON.stringify(newPlaylistVideos.map(v => v.id))) {
       list.innerHTML = "";
       newPlaylistVideos.forEach((video, index) => {
@@ -1635,7 +1629,6 @@ function loadVideosForCurrentPlaylist() {
         list.appendChild(item);
       });
     } else {
-      // Just update progress bars for existing items
       newPlaylistVideos.forEach(video => {
         updateProgressBarForVideo(video.id, video.data.time || 0);
       });
@@ -1643,13 +1636,11 @@ function loadVideosForCurrentPlaylist() {
 
     playlistVideos = newPlaylistVideos;
 
-    // Auto-play the most recently watched video if available and no hash in URL
     if (mostRecentVideo && !videoId && !window.location.hash && isInitialLoad) {
       loadSavedVideo(mostRecentVideo);
       isInitialLoad = false;
     }
     
-    // Update current video index if we have a videoId but no index
     if (videoId && currentVideoIndex === -1) {
       currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
       updateNavButtons();
@@ -1665,7 +1656,6 @@ function renderPlaylistSelector() {
     const playlistItem = document.createElement('div');
     playlistItem.className = `playlist-option ${playlistId === currentPlaylistId ? 'active' : ''}`;
     
-    // Create toggle button for auto-play next
     const toggleButton = document.createElement('button');
     toggleButton.className = 'auto-play-toggle';
     toggleButton.innerHTML = `
@@ -1675,27 +1665,20 @@ function renderPlaylistSelector() {
       </span>
     `;
     
-    // Set initial state
     if (playlistId === currentPlaylistId) {
       autoPlayNextEnabled = playlist.autoPlayNext !== false;
     }
     
-    // Toggle click handler
     toggleButton.addEventListener('click', (e) => {
       e.stopPropagation();
       const newState = !(playlist.autoPlayNext !== false);
       
-      // Update Firebase
       db.ref(`playlists/${playlistId}/autoPlayNext`).set(newState).then(() => {
-        // Update local state
         playlists[playlistId].autoPlayNext = newState;
-        
-        // Update UI
         const toggleSwitch = toggleButton.querySelector('.toggle-switch');
         toggleSwitch.classList.toggle('on', newState);
         toggleSwitch.classList.toggle('off', !newState);
         
-        // If this is the current playlist, update the global setting
         if (playlistId === currentPlaylistId) {
           autoPlayNextEnabled = newState;
         }
@@ -1707,22 +1690,16 @@ function renderPlaylistSelector() {
       <div class="playlist-option-count">${playlist.videos ? Object.keys(playlist.videos).length : 0}</div>
     `;
     
-    // Add toggle button to the playlist item
     playlistItem.appendChild(toggleButton);
-    
     playlistItem.addEventListener('click', () => {
-      // Show videos for this playlist
       const videosContainer = playlistItem.querySelector('.playlist-videos');
       if (videosContainer) {
         videosContainer.classList.toggle('active');
         return;
       }
-      
-      // Switch to this playlist
       switchToPlaylist(playlistId);
     });
     
-    // Add right-click menu for viewing videos
     playlistItem.addEventListener('contextmenu', (e) => {
       e.preventDefault();
       showPlaylistVideos(playlistId, playlistItem);
@@ -1733,14 +1710,12 @@ function renderPlaylistSelector() {
 }
 
 function showPlaylistVideos(playlistId, playlistElement) {
-  // Remove any existing videos container
   const existingContainer = playlistElement.querySelector('.playlist-videos');
   if (existingContainer) {
     existingContainer.remove();
     return;
   }
   
-  // Create new videos container
   const videosContainer = document.createElement('div');
   videosContainer.className = 'playlist-videos active';
   
@@ -1765,37 +1740,23 @@ function showPlaylistVideos(playlistId, playlistElement) {
 }
 
 function switchToPlaylist(playlistId) {
-  // Save current time before switching
   if (player && videoId && unsavedChanges) {
     forceSaveCurrentTime();
   }
   
   currentPlaylistId = playlistId;
   currentPlaylistName.textContent = playlists[playlistId].name || "Default Playlist";
-  
-  // Update auto-play next setting for this playlist
   autoPlayNextEnabled = playlists[playlistId].autoPlayNext !== false;
-  
-  // Save the last played playlist to Firebase
   db.ref(LAST_PLAYED_PLAYLIST_KEY).set(playlistId);
   
-  // Close admin panel
   adminPanel.classList.remove('active');
   overlay.classList.remove('active');
-  
-  // Load videos for new playlist
   loadVideosForCurrentPlaylist();
-  
-  // Reset player
   videoId = '';
   if (player) {
     player.stopVideo();
   }
-  
-  // Clear URL hash
   window.location.hash = '';
-  
-  // Now find and play the most recently watched video in this playlist
   findAndPlayLastWatchedVideo(playlistId);
 }
 
@@ -1829,16 +1790,13 @@ function createNewPlaylist() {
   
   const newPlaylistId = generateId();
   
-  // Create the playlist without any videos initially
   db.ref(`playlists/${newPlaylistId}`).set({
     name: playlistName,
     createdAt: firebase.database.ServerValue.TIMESTAMP,
-    videos: {}, // Explicitly set empty videos object
-    autoPlayNext: true // Default to true for new playlists
+    videos: {},
+    autoPlayNext: true
   }).then(() => {
     document.getElementById('newPlaylistName').value = '';
-    
-    // Switch to the new playlist
     switchToPlaylist(newPlaylistId);
   }).catch(error => {
     console.error("Error creating playlist:", error);
@@ -1856,7 +1814,7 @@ function generateId() {
 function calculateProgress(currentTime, duration) {
   if (duration <= 0) return 0;
   const progress = (currentTime / duration) * 100;
-  return Math.min(100, Math.max(0, progress)); // Ensure between 0-100
+  return Math.min(100, Math.max(0, progress));
 }
 
 function formatTime(seconds) {
@@ -1866,7 +1824,6 @@ function formatTime(seconds) {
 }
 
 function loadSavedVideo(vid) {
-  // Check if video exists in current playlist
   if (!playlistVideos.some(video => video.id === vid)) {
     console.error("Video not found in current playlist");
     return;
@@ -1883,7 +1840,6 @@ function loadSavedVideo(vid) {
 
 function playNextVideo() {
   if (currentVideoIndex < playlistVideos.length - 1) {
-    // Save current time before moving to next video
     if (player && videoId && unsavedChanges) {
       forceSaveCurrentTime();
     }
@@ -1895,7 +1851,6 @@ function playNextVideo() {
 
 function playPreviousVideo() {
   if (currentVideoIndex > 0) {
-    // Save current time before moving to previous video
     if (player && videoId && unsavedChanges) {
       forceSaveCurrentTime();
     }
@@ -1947,20 +1902,15 @@ function updateProgressBarForVideo(vid, currentTime) {
     progressBar.style.width = `${percentage}%`;
     timeDisplay.textContent = formatTime(currentTime);
     
-    // Track if we have unsaved changes
     if (vid === videoId) {
       unsavedChanges = Math.abs(currentTime - lastSavedTime) >= 1;
     }
   }
 }
 
-// Enhanced unload handlers
 function handleBeforeUnload(e) {
   if (player && videoId && unsavedChanges) {
-    forceSaveOnUnload = true;
     forceSaveCurrentTime();
-    
-    // Chrome requires returnValue to be set
     e.preventDefault();
     e.returnValue = '';
     return '';
@@ -1973,16 +1923,13 @@ function handleVisibilityChange() {
   }
 }
 
-// Set up event listeners for page unload/scenarios
 window.addEventListener('beforeunload', handleBeforeUnload);
 window.addEventListener('pagehide', handleBeforeUnload);
 document.addEventListener('visibilitychange', handleVisibilityChange);
 
-// Load video list on page load
 window.onload = function() {
   setupRealtimeListener();
   
-  // Add event listener for Enter key in input field
   document.getElementById("videoLink").addEventListener("keypress", function(e) {
     if (e.key === "Enter") {
       saveAndLoadVideo();
@@ -1990,9 +1937,6 @@ window.onload = function() {
   });
 };
 </script>
- 
-
  </body>
 </html>
  
-
