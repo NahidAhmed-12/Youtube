@@ -1426,7 +1426,10 @@ function loadPlayer(videoId, startTime) {
   
   db.ref(`playlists/${currentPlaylistId}/videos/${videoId}/lastWatched`).set(firebase.database.ServerValue.TIMESTAMP);
   lastWatchedVideoId = videoId;
-  window.location.hash = `${currentPlaylistId}|${videoId}`;
+  
+  // Remove URL hash update to hide playlist and video info from URL
+  // window.location.hash = `${currentPlaylistId}|${videoId}`;
+  
   currentVideoIndex = playlistVideos.findIndex(video => video.id === videoId);
   updateNavButtons();
   lastSavedTime = startTime;
@@ -1640,10 +1643,11 @@ function setupRealtimeListener() {
       currentPlaylistId = snapshot.val();
     }
     
-    const hashParts = window.location.hash.substring(1).split('|');
-    if (hashParts.length === 2) {
-      currentPlaylistId = hashParts[0];
-    }
+    // Remove hash parsing to hide playlist and video info from URL
+    // const hashParts = window.location.hash.substring(1).split('|');
+    // if (hashParts.length === 2) {
+    //   currentPlaylistId = hashParts[0];
+    // }
     
     db.ref("playlists").on("value", (snapshot) => {
       if (snapshot.exists()) {
@@ -1667,8 +1671,15 @@ function setupRealtimeListener() {
         db.ref(LAST_PLAYED_PLAYLIST_KEY).set(currentPlaylistId);
         loadVideosForCurrentPlaylist();
         
-        if (isInitialLoad && hashParts.length === 2 && hashParts[0] === currentPlaylistId) {
-          loadSavedVideo(hashParts[1]);
+        // Remove initial load from hash to hide playlist and video info
+        // if (isInitialLoad && hashParts.length === 2 && hashParts[0] === currentPlaylistId) {
+        //   loadSavedVideo(hashParts[1]);
+        //   isInitialLoad = false;
+        // }
+        
+        // Load last watched video from database instead of URL
+        if (isInitialLoad) {
+          findAndPlayLastWatchedVideo(currentPlaylistId);
           isInitialLoad = false;
         }
       } else {
@@ -1770,7 +1781,7 @@ function loadVideosForCurrentPlaylist() {
 
     playlistVideos = newPlaylistVideos;
 
-    if (mostRecentVideo && !videoId && !window.location.hash && isInitialLoad) {
+    if (mostRecentVideo && !videoId && isInitialLoad) {
       loadSavedVideo(mostRecentVideo);
       isInitialLoad = false;
     }
@@ -1890,7 +1901,10 @@ function switchToPlaylist(playlistId) {
   if (player) {
     player.stopVideo();
   }
-  window.location.hash = '';
+  
+  // Remove URL hash update to hide playlist info
+  // window.location.hash = '';
+  
   findAndPlayLastWatchedVideo(playlistId);
 }
 
